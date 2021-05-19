@@ -1,0 +1,13 @@
+Package: RESGF
+Type: Package
+Title: RESGF
+Version: 0.1.0
+Author: Mark R. Payne <mpay@aqua.dtu.dk>
+Maintainer: Mark R. Payne <mpay@aqua.dtu.dk>
+Description: Streamlines searching and downloading data from the the Earth System Grid Federation (ESGF)
+    via the RESTful API system. 
+License: What license is it under?
+Depends: httr, tidyverse, jsonlite
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0
