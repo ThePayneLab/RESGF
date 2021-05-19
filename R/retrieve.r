@@ -34,7 +34,7 @@ resgf_retrieve <-
     #Run the script (no authentication)
     wget.fname <- file.path(object@local.db.dir,sprintf("%s.sh",this.filename))
     writeLines(wget.script,wget.fname)
-    system2("bash",args = sprintf("%s -s",wget.fname))
+    system(sprintf("cd %s && bash %s -s",object@local.db.dir,wget.fname))
 
     #Assuming successful completion (how to check?) delete the script
     file.remove(wget.fname)

@@ -24,11 +24,13 @@ resgf_extract_manifest <- function(wget.script) {
   wget.fname <- tempfile(fileext = ".sh")
   manifest.fname <- paste(wget.fname,".manifest",sep="")
   writeLines(wget.script,wget.fname)
-  system2("bash",args = sprintf("%s -w %s",wget.fname,manifest.fname))
+  rtn <- system2("bash",args = sprintf("%s -w %s",wget.fname,manifest.fname))
+  if(rtn!=0) {
+    stop(sprintf("Cannot extract manifest. Run 'readLines(\"%s\")' to see contents of file.",wget.fname))
+  }
   manifest <- read_delim(manifest.fname,delim=" ",quote="'",col_types="cccc",
-                         col_names=c("filename","url","checksum.type","checksum"))
+                           col_names=c("filename","url","checksum.type","checksum"))
   return(manifest)
-
 }
 
 
@@ -72,6 +74,5 @@ resgf_get_manifest <-
   return(this.manifest)
 
   }
-
 
 
