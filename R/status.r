@@ -8,11 +8,11 @@ setMethod("show",signature(object="resgf_status"),
           function(object) {
             cat(sprintf("%-20s : %s\n","Local directory",object@local.db.dir))
             cat(sprintf("%-20s : %s\n","Checksums verified?",object@checksums.verified))
-            cat(sprintf("%-20s :\n","Status"))
-
-            object@status %>%
-              with(.,table(locally.valid,in.manifest)) %>%
-              print()
+            cat(sprintf("%-20s : %i\n","Remote files",nrow(object@remote.manifest@manifest)))
+            cat(sprintf("%-20s : %i\n","Local files",sum(!is.na(object@status$local.path))))
+            cat(sprintf("%-20s : %i\n","Remote files locally valid",sum(object@status$locally.valid)))
+            cat(sprintf("%-20s : %i\n","Invalid/missing locally",
+                        sum(!object@status$locally.valid & object@status$in.manifest)))
           })
 
 
