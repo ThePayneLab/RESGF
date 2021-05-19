@@ -10,7 +10,8 @@ setMethod("show",signature(object="resgf_status"),
             cat(sprintf("%-30s : %i\n","Local files",sum(!is.na(object@status$local.path))))
             cat(sprintf("%-30s : %s\n","Checksums verified?",object@checksums.verified))
             cat(sprintf("%-30s : %i\n","Remote files",nrow(object@remote.manifest@manifest)))
-            cat(sprintf("%-30s : %i\n","Remote files locally valid",sum(object@status$locally.valid)))
+            cat(sprintf("%-30s : %i\n","Remote files locally valid",
+                        sum(object@status$locally.valid & object@status$in.manifest)))
             cat(sprintf("%-30s : %i\n","Invalid/missing locally",
                         sum(!object@status$locally.valid & object@status$in.manifest)))
           })
