@@ -50,16 +50,19 @@ resgf_get_manifest <-
            node="http://esgf-node.llnl.gov/esg-search") {
 
   #Setup return object
-  this.manifest <- resgf_manifest(node=node)
+  this.manifest <- new("resgf_manifest",node=node)
 
   #Build search command
   search.cmd <-
-    sprintf("wget?limit=20&%s",
+    sprintf("wget?limit=10000&%s",
                         resgf_build_constraints(...))
   this.manifest@wget.command <- search.cmd
 
   #Retrieve wget file
-  this.wget.rtn <- GET(sprintf("%s/%s",node,search.cmd))
+  this.cmd <- sprintf("%s/%s",node,search.cmd)
+  this.wget.rtn <- GET(this.cmd)
+  assert_that(this.wget.rtn$status_code==200,
+              msg=sprintf("Failure on command %s. Try running it again in a browser to see more details.",this.cmd))
   wget.content <- content(this.wget.rtn,"text")
   this.manifest@wget.script <- wget.content
 
