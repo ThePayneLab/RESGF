@@ -16,27 +16,56 @@ setMethod("show",signature(object="resgf_status"),
                         sum(!object@status$locally.valid & object@status$in.manifest)))
           })
 
-#' Overview of missing files
+#' Summarise status  
 #' 
-#' Extracts the relevant metadata for missing files from a resgf_status object, allowing filtering
-#' sorting and counting operations to be performed by the user
+#' Summarise the results stored in a resgf_status object in terms of one of the filename fields or the data node
 #'
 #' @param object An resgf_status object
-#'
-#' @return A tibble with metadata fields added
+#' @param field.idx Index of the filename field to summarise over.
+#' @param field.sep  Character used to separate fields in the filename. Default is "_"
+#' @return A tibble summarising the status accordingly.
+#' @name summariseStatus
 #' @export
 #'
-metadata.missing <- function(object) {
+resgf_status_by_field <- function(object,field.idx=1,field.sep="_") {
+  #Check inputs
+  assert_that(is(object,"resgf_status"),
+              msg="Supplied object is not an resgf_status object")
+  assert_that(length(field.idx)==1,
+              msg="Field argument must be an integer of length 1")
+  
+  #Split filenames into fiels
+  this.status <- 
+    object@status %>%
+    filter(in.manifest) %>%
+    mutate(noext.fname=gsub("\\..*?$","",filename),
+           field=str_split(noext.fname,field.sep,simplify = TRUE))
+  
+  #Check that request is ok
+  assert_that(ncol(this.status$field) >= field.idx,
+              msg=sprintf("Field index requested, %i, is too high. Max value is %i.",field.idx,ncol(this.status$field)))
+  
+  this.status %>%
+    mutate(field.value=field[,field.idx]) %>%
+    group_by(field.value) %>%
+    summarise(remote.files=n(),
+              local.files=sum(locally.valid),
+              proportion=mean(locally.valid))
+}
+
+#' @export
+#' @name summariseStatus
+resgf_status_by_node <- function(object) {
   assert_that(is(object,"resgf_status"),
               msg="Supplied object is not an resgf_status object")
   object@status %>%
-   filter(!locally.valid,
-          in.manifest) %>%
-    mutate(noext=gsub("\\..*?$","",filename)) %>%
-    separate(noext,
-           c("variable_id","table_id","model_id","experiment_id","variant","grid","dates"),
-           sep="_") %>%
-    extract(url,"data.node","^(https*://.*?)/.*$",remove=FALSE)
+    filter(in.manifest) %>%
+    extract(url,"data.node","^(https*://.*?)/.*$",remove=FALSE) %>%
+    group_by(data.node) %>%
+    summarise(remote.files=n(),
+              local.files=sum(locally.valid),
+              proportion=mean(locally.valid))
+  
 }
 
 #' Compare local database with ESGF search
@@ -53,7 +82,7 @@ metadata.missing <- function(object) {
 #' @examples
 #' resgf_check_status(local.db.dir=pwd(),
 #'                    esgf.manifest=this.manifest)
-resgf_check_status <-
+resgf_status_check <-
   function(local.db.dir,
            esgf.manifest,
            check.checksums=FALSE) {

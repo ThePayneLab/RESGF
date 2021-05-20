@@ -10,4 +10,4 @@ License: What license is it under?
 Depends: httr, tidyverse, jsonlite, assertthat
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
