@@ -16,6 +16,28 @@ setMethod("show",signature(object="resgf_status"),
                         sum(!object@status$locally.valid & object@status$in.manifest)))
           })
 
+#' Overview of missing files
+#' 
+#' Extracts the relevant metadata for missing files from a resgf_status object, allowing filtering
+#' sorting and counting operations to be performed by the user
+#'
+#' @param object An resgf_status object
+#'
+#' @return A tibble with metadata fields added
+#' @export
+#'
+metadata.missing <- function(object) {
+  assert_that(is(object,"resgf_status"),
+              msg="Supplied object is not an resgf_status object")
+  object@status %>%
+   filter(!locally.valid,
+          in.manifest) %>%
+    mutate(noext=gsub("\\..*?$","",filename)) %>%
+    separate(noext,
+           c("variable_id","table_id","model_id","experiment_id","variant","grid","dates"),
+           sep="_") %>%
+    extract(url,"data.node","^(https*://.*?)/.*$",remove=FALSE)
+}
 
 #' Compare local database with ESGF search
 #'
