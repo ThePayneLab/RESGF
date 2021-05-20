@@ -1,3 +1,154 @@
+#========================================================================
+# Setup classes ####
+#========================================================================
+
+#' @export
+is.resgf_search_result <- function(x) inherits(x, "resgf_search_result")
+
+#' @export
+is.resgf_dataset <- function(x) inherits(x, "resgf_dataset")
+
+#' @export
+print.resgf_search_result <-
+  function(object) {
+    cat(sprintf("%-30s : %i\n","Number of results",nrow(object)))
+    cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
+    object %>%
+      as_tibble() %>%
+      print()
+  }
+
+#' @export
+print.resgf_dataset <-
+  function(object) {
+    cat(sprintf("%-30s : %i\n","Number of datasets",nrow(object)))
+    cat(sprintf("%-30s : %i\n","Number of files",sum(object$number_of_files)))
+    cat(sprintf("%-30s : %s bytes\n","Data size",format(sum(object$size),
+                                                        digits=3,scientific=TRUE)))
+    cat(sprintf("%-30s : %s\n","Proportion replicas",format(mean(object$replica),
+                                                            digits=2)))
+    cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
+    object %>%
+      as_tibble() %>%
+      print()
+  }
+
+#' @export
+print.resgf_fileset <-
+  function(object) {
+    cat(sprintf("%-30s : %i\n","Number of datasets",length(unique(object$dataset_id))))
+    cat(sprintf("%-30s : %i\n","Number of files",nrow(object)))
+    cat(sprintf("%-30s : %s bytes\n","Data size",format(sum(object$size),
+                                                        digits=3,scientific=TRUE)))
+    cat(sprintf("%-30s : %s\n","Proportion replicas",format(mean(object$replica),
+                                                            digits=2)))
+    cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
+    object %>%
+      as_tibble() %>%
+      print()
+  }
+
+#========================================================================
+# Search ####
+#========================================================================
+
+
+#' Search ESGF
+#'
+#' Functions to search ESGF.
+#'
+#' @details For documentation of the constraints, see the ESGF RESTful API documentation for help, https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html. Details about the metadata returned can be found in the metadata setctions of https://esgf.github.io/esg-search/index.html.
+#'
+#' resgf_search_datasets() looks specifically for datasets, while resgf_search() is a general interface to the
+#' ESGF search functionality (and can work with aggregations and files as well).
+#'
+#' @param ... A list of constraints on which to apply the search.
+#' @param node URL (including "http://") of the ESGF index node to search
+#' @param search.limit Maximum number of values to return in the search. ESGF currently limits this to 10000
+#'
+#' @return resegf_search_datasets() returns an resgf_dataset object detailing the search results. resgf_search()
+#' returns an resgf_search_result object.
+#' @name searchESGF
+#' @export
+#' @examples
+#' resgf_search_datasets(variable_id=c("tos","so"),
+#'                       experiment_id="historical",
+#'                       table_id="Omon",
+#'                       project="CMIP6")
+resgf_search <-
+  function(...,
+           node="http://esgf-node.llnl.gov/esg-search",
+           search.limit=10000) {
+
+  #Check inputs
+  assertthat::assert_that(search.limit<=10000,msg = "ESGF currently only supports searchs of up to 10000 items")
+
+  #Build search command
+
+  search.cmd <- sprintf("%s/search?format=application%%2Fsolr%%2Bjson&limit=%i&%s",
+                        node,
+                        search.limit,
+                        resgf_build_constraints(...))
+
+  #Do first search
+  search.res <- fromJSON(search.cmd,flatten=TRUE)
+
+  #Convert to a results table
+  if(search.res$response$numFound>0) {
+    rtn <-
+      search.res$response$docs %>%
+      as_tibble() %>%
+      new_tibble(class="resgf_search_result",
+                 search.cmd=search.cmd,
+                 search.res=search.res,
+                 nrow=nrow(.))
+
+    #Check output
+    if(nrow(rtn)>=search.limit) warning("Number of results may be constrained by the search limit.")
+
+  } else {
+    rtn <- NULL
+  }
+
+  return(rtn)
+}
+
+
+#' @export
+#' @name searchESGF
+resgf_search_datasets <-
+  function(...) {
+    #Parse arglist
+    arg.list <- list(...)
+    #Overwrite type, if supplied
+    arg.list$type <- "Dataset"
+    #Make call to generic search function
+    rtn <-
+      do.call(resgf_search,arg.list) %>%
+      new_tibble(class=c("resgf_dataset","resgf_search_result"))
+
+    return(rtn)
+  }
+
+#' @export
+#' @name searchESGF
+resgf_search_files <-
+  function(...) {
+    #Parse arglist
+    arg.list <- list(...)
+    #Overwrite type, if supplied
+    arg.list$type <- "File"
+    #Make call to generic search function
+    rtn <-
+      do.call(resgf_search,arg.list) %>%
+      new_tibble(class=c("resgf_fileset","resgf_search_result"))
+
+    return(rtn)
+  }
+
+#========================================================================
+# Helpers ####
+#========================================================================
 
 #' Builds a set of search constraints for use with ESGF restful API.
 #'
@@ -19,50 +170,55 @@ resgf_build_constraints <- function(...) {
 }
 
 
-#' Search ESGF
+#' Get the filelist
 #'
-#' @param ... A list of constraints on which to apply the search. See the ESGF RESTful API documentation for help, https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-#' @param node URL (including "http://") of the ESGF index node to search
-#' @param search.limit Maximum number of values to return in the search. ESGF currently limits this to 10000
+#' Gets the list of files associated with the datasets
 #'
-#' @return A tibble detailing the search results
+#' @param object
+#'
+#' @return
 #' @export
-#' @examples
-#' resgf_search(variable_id=c("tos","so"),
-#'              experiment_id="historical",
-#'              table_id="Omon",
-#'              project="CMIP6")
-resgf_search <-
-  function(...,
-           node="http://esgf-node.llnl.gov/esg-search",
-           search.limit=10000) {
+resgf_get_filelist <-
+  function(object,max.files=1000,max.datasets=10) {
+    #Require input object to be dataset search result
+    assert_that(max(object$number_of_files)< max.files,
+                msg="File chunk size is too small.")
+    assert_that(is.resgf_dataset(object),
+                msg="Input must be an object returned by resgf_search_datasets().")
 
-  #Check inputs
-  assertthat::assert_that(search.limit<=10000,msg = "ESGF currently only supports searchs of up to 10000 items")
+    #Because we can only receive 10000 results at a time, we need to process the results piecewise
+    this.chunk <- 1
+    to.assign <-
+      object %>%
+      as_tibble() %>%
+      select(id,number_of_files)
+    chunk.l <- list()
 
-  #Build search command
+    while (nrow(to.assign)>0) {
+      #Make cumulative list
+      to.assign$cumsum <- cumsum(to.assign$number_of_files)
+      #Move those that are valid onto the chunk list
+      move.these <- head(which(to.assign$cumsum<=max.files),max.datasets)
+      chunk.l[[this.chunk]] <- to.assign[move.these,]
+      to.assign <- to.assign[-move.these,]
+      #Housekeeping
+      this.chunk <- this.chunk +1
+    }
 
-  search.cmd <- sprintf("%s/search?format=application%%2Fsolr%%2Bjson&limit=%i&%s",
-                        node,
-                        search.limit,
-                        resgf_build_constraints(...))
-  #Do first search
-  search.res <- fromJSON(search.cmd,flatten=TRUE)
-  #Convert to a results table
-  rtn <-
-    search.res$response$docs %>%
-    as_tibble()
+    #Now perform the search for each of these in turn
+    this.fileset <-
+      bind_rows(chunk.l,.id="chunk") %>%
+      nest(id=-chunk)  %>%
+      mutate(fileset=map(id,~ resgf_search_files(dataset_id=.x$id)))
 
-  #Check output
-  assertthat::assert_that(nrow(rtn)!=search.limit,
-                          msg="Number of results may be constrained by the search limit.")
-
-
-  return(rtn)
-
-  }
+    #And we're done (with some tidying)
+    rtn <-
+      this.fileset %>%
+      select(fileset) %>%
+      unnest(fileset) %>%
+      new_tibble(class=c("resgf_fileset","resgf_search_result"),
+                 nrow=nrow(.))
 
 
-
-
+}
 
