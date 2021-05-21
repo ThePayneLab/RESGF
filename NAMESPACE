@@ -3,6 +3,7 @@
 S3method(print,resgf_dataset)
 S3method(print,resgf_fileset)
 S3method(print,resgf_search_result)
+S3method(print,resgf_status)
 export(is.resgf_dataset)
 export(is.resgf_fileset)
 export(is.resgf_search_result)

@@ -4,10 +4,18 @@
 \alias{resgf_retrieve}
 \title{Retrieve missing files from ESGF}
 \usage{
-resgf_retrieve(object)
+resgf_retrieve(
+  object,
+  node = "http://esgf-node.llnl.gov/esg-search",
+  processes = 1
+)
 }
 \arguments{
 \item{object}{Either a resgf_status or resgf_manifest object detailing what should be retrieved}
+
+\item{node}{ESGF node to generate wget scripts from}
+
+\item{processes}{Number of processes to run in parallel}
 }
 \description{
 Retrieve missing files from ESGF

@@ -1,27 +1,30 @@
 #' Retrieve missing files from ESGF
 #'
 #' @param object Either a resgf_status or resgf_manifest object detailing what should be retrieved
+#' @param node ESGF node to generate wget scripts from
+#' @param processes Number of processes to run in parallel
 #'
 #' @details When a resgf_status object is supplied, only files that are not held locally (but are listed in the manifest) are retrieved. For a manifest object, all files are retrieved
 #' are
 #' @export
 resgf_retrieve <-
-  function(object) {
+  function(object,node="http://esgf-node.llnl.gov/esg-search",processes=1) {
 
   #Get list to retrieve
   get.these <-
-    object@status %>%
-      filter(!locally.valid,
-             in.manifest)
+    object %>%
+    as_tibble() %>%
+    filter(is.na(local.path)) %>%
+    split(.,1:nrow(.))
 
-  #Loop
-  for(i in seq(nrow(get.these))) {
-    this.checksum <- get.these$checksum[i]
-    this.filename <- get.these$filename[i]
+  #Retrieval function
+  retrieve.file <- function(get.this) {
+    this.checksum <- get.this$checksum[[1]]
+    this.filename <- get.this$filename[[1]]
 
     #Request a wget script for the file
     search.cmd <- sprintf("%s/wget?checksum=%s",
-                          object@remote.manifest@node,
+                          node,
                           this.checksum)
     this.wget.rtn <- GET(search.cmd)
     wget.script <- content(this.wget.rtn,"text")
@@ -32,14 +35,19 @@ resgf_retrieve <-
                 msg=sprintf("Multiple matches found for file %s.",this.filename))
 
     #Run the script (no authentication)
-    wget.fname <- file.path(object@local.db.dir,sprintf("%s.sh",this.filename))
+    local.dir <- attr(object,"local.dir")
+    wget.fname <- file.path(local.dir,sprintf("%s.sh",this.filename))
     writeLines(wget.script,wget.fname)
-    system(sprintf("cd %s && bash %s -s",object@local.db.dir,wget.fname))
+    be.quiet <- processes > 1
+    system(sprintf("cd %s && bash %s -s",local.dir,wget.fname),
+           ignore.stderr = be.quiet,ignore.stdout = be.quiet)
 
     #Assuming successful completion (how to check?) delete the script
     file.remove(wget.fname)
 
   }
 
-  }
+  #Do retrieval
+  pblapply(get.these,retrieve.file,cl=processes)
 
+}
