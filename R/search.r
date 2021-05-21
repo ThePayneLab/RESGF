@@ -9,6 +9,9 @@ is.resgf_search_result <- function(x) inherits(x, "resgf_search_result")
 is.resgf_dataset <- function(x) inherits(x, "resgf_dataset")
 
 #' @export
+is.resgf_fileset <- function(x) inherits(x, "resgf_fileset")
+
+#' @export
 print.resgf_search_result <-
   function(object) {
     cat(sprintf("%-30s : %i\n","Number of results",nrow(object)))
@@ -172,14 +175,19 @@ resgf_build_constraints <- function(...) {
 
 #' Get the filelist
 #'
-#' Gets the list of files associated with the datasets
+#' Gets the list of files associated with the datasets. This is done in a piecewise manner to avoid
+#' overloading both the number of return values and the ability to issue the command, and can optionally
+#' be done in parallel as well.
 #'
-#' @param object
+#' @param object resegf_dataset object from which to retrieve the underlying files
+#' @param max.files maximum number of files to be returned in a chunk
+#' @param max.datasets maximum number of datasets to request in a chunk
+#' @param processes Number of processes to perform in parallel
 #'
 #' @return
 #' @export
 resgf_get_filelist <-
-  function(object,max.files=1000,max.datasets=10) {
+  function(object,max.files=1000,max.datasets=10,processes=1) {
     #Require input object to be dataset search result
     assert_that(max(object$number_of_files)< max.files,
                 msg="File chunk size is too small.")
@@ -207,18 +215,18 @@ resgf_get_filelist <-
 
     #Now perform the search for each of these in turn
     this.fileset <-
-      bind_rows(chunk.l,.id="chunk") %>%
-      nest(id=-chunk)  %>%
-      mutate(fileset=map(id,~ resgf_search_files(dataset_id=.x$id)))
+      pblapply(chunk.l,
+               function(x) {resgf_search_files(dataset_id=x$id)},
+               cl=processes)
 
     #And we're done (with some tidying)
     rtn <-
       this.fileset %>%
-      select(fileset) %>%
-      unnest(fileset) %>%
+      bind_rows() %>%
       new_tibble(class=c("resgf_fileset","resgf_search_result"),
-                 nrow=nrow(.))
-
+                 nrow=nrow(.),
+                 search.cmd=NULL,  #Drop this
+                 search.res=NULL)
 
 }
 

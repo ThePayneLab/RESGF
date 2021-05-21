@@ -7,7 +7,7 @@ Maintainer: Mark R. Payne <mpay@aqua.dtu.dk>
 Description: Streamlines searching and downloading data from the the Earth System Grid Federation (ESGF)
     via the RESTful API system. 
 License: What license is it under?
-Depends: httr, tidyverse, jsonlite, assertthat
+Depends: httr, tidyverse, jsonlite, assertthat,pbapply
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
