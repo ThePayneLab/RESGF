@@ -1,3 +1,4 @@
+
 #' Retrieve missing files from ESGF
 #'
 #' @param object Either a resgf_status or resgf_manifest object detailing what should be retrieved
@@ -17,7 +18,7 @@ resgf_retrieve <-
       get.these <-
         object %>%
         as_tibble() %>%
-        filter(is.na(local.path) | !checksums.passed)
+        filter(is.na(local.path) | !checksum.passed)
     } else { #Only get missing
       get.these <-
         object %>%
@@ -58,11 +59,16 @@ resgf_retrieve <-
     }
 
     #Do retrieval
-    rtn <-
+    res <-
       get.these %>%
       split(.,1:nrow(.)) %>%
       pblapply(retrieve.file,cl=processes) %>%
       bind_rows()
+
+    #Return status object
+    rtn <- new_tibble(res,
+                      nrow=nrow(res),
+                      class=c("resgf_status","resgf_download_status"))
     return(rtn)
 
   }
