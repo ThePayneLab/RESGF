@@ -11,7 +11,7 @@ print.resgf_status <-
             cat(sprintf("%-30s : %i\n","Remote files stored locally",
                          sum(!is.na(object$local.path))))
             cat(sprintf("%-30s : %i\n","Local checksums passed",
-                        sum(object$checksum.passed)))
+                        sum(object$checksum.passed,na.rm = TRUE)))
             object %>%
               as_tibble() %>%
               print()
@@ -28,6 +28,7 @@ print.resgf_status <-
 #' @param local.dir Path to the local directory. Files nested in subdirectories are also detected.
 #' @param remote.db resgf_fileset object generated previously, which forms the reference database
 #' @param check.checksums Should the comparison be done using the checksums (slow!)? Or only the filenames.
+#' @param processes Number of processes to run in parallel
 #'
 #' @return An resgf_status object
 #' @export
@@ -38,7 +39,8 @@ print.resgf_status <-
 resgf_status_check <-
   function(local.dir,
            remote.db,
-           check.checksums=FALSE) {
+           check.checksums=FALSE,
+           processes=1) {
     #Check inputs
     assert_that(is.resgf_fileset(remote.db),
                 msg="'remote.db' argument needs to be of type resgf_fileset.")
@@ -57,9 +59,42 @@ resgf_status_check <-
       right_join(x=local.db,by="filename")
 
     #Here we would do the checksum check
+    if(check.checksums) {
+      #Best if we do it via pblapply, to allow parallelisation. This requires
+      #first separating out the files to checksum, doing the analysis, and then recombinin
+      #Obviously only check the files that we have locally
+      check.these <-
+        status.db %>%
+        filter(!is.na(local.path)) %>%
+        mutate(checksum_type=map_chr(checksum_type,~.x),
+               checksum=map_chr(checksum,~.x)) %>%
+        select(filename,local.path,id,checksum,checksum_type) %>%
+        split(.,seq(nrow(.)))   #Split into individual rows for pbapply
+
+      #Now do the checking
+      check.status <-
+        pblapply(check.these,cl=processes,FUN=function(d) {
+          d$checksum.passed <-
+            switch(d$checksum_type,
+                 "SHA256"=system(sprintf("echo %s %s | sha256sum --check",d$checksum,d$local.path),
+                                 ignore.stderr = TRUE,ignore.stdout = TRUE),
+                 stop(sprintf("Unsupport checksum_type %s needed for file %s",d$checksum_type,d$local.path)))
+          return(d)
+        }) %>%
+        bind_rows() %>%
+        mutate(checksum.passed=checksum.passed==0)
+
+      #Merge results back into table
+      status.db <-
+        check.status %>%
+        select(id,checksum.passed) %>%
+        left_join(x=status.db,by="id")
+
+    } else {
     status.db <-
-      mutate(status.db,
-             checksum.passed=FALSE)
+          mutate(status.db,
+                 checksum.passed=FALSE)
+    }
 
     #Return status object
     rtn <- new_tibble(status.db,

@@ -4,7 +4,12 @@
 \alias{resgf_status_check}
 \title{Compare local database with ESGF search}
 \usage{
-resgf_status_check(local.dir, remote.db, check.checksums = FALSE)
+resgf_status_check(
+  local.dir,
+  remote.db,
+  check.checksums = FALSE,
+  processes = 1
+)
 }
 \arguments{
 \item{local.dir}{Path to the local directory. Files nested in subdirectories are also detected.}
@@ -12,6 +17,8 @@ resgf_status_check(local.dir, remote.db, check.checksums = FALSE)
 \item{remote.db}{resgf_fileset object generated previously, which forms the reference database}
 
 \item{check.checksums}{Should the comparison be done using the checksums (slow!)? Or only the filenames.}
+
+\item{processes}{Number of processes to run in parallel}
 }
 \value{
 An resgf_status object
