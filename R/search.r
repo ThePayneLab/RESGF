@@ -9,6 +9,12 @@ is.resgf_search_result <- function(x) inherits(x, "resgf_search_result")
 is.resgf_dataset <- function(x) inherits(x, "resgf_dataset")
 
 #' @export
+as.resgf_dataset <- function(x) new_tibble(x,nrow=nrow(x),class="resgf_dataset")
+
+#' @export
+as.resgf_fileset <- function(x) new_tibble(x,nrow=nrow(x),class="resgf_fileset")
+
+#' @export
 is.resgf_fileset <- function(x) inherits(x, "resgf_fileset")
 
 #' @export
