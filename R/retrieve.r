@@ -1,9 +1,20 @@
+#========================================================================
+# Classes ####
+#========================================================================
+
+
+#========================================================================
+# Methods ####
+#========================================================================
+
 
 #' Retrieve missing files from ESGF
 #'
 #' @param object Either a resgf_status or resgf_manifest object detailing what should be retrieved
 #' @param node ESGF node to generate wget scripts from
 #' @param processes Number of processes to run in parallel
+#' @param skip.checksum Stops the wget script from verifying the checksum of the downloaded file. Corresponds to
+#' activating the "-p" parameter on the wget script.
 #'
 #' @details When a resgf_status object is supplied, only files that are not held locally (but are listed in the manifest) are retrieved. For a manifest object, all files are retrieved
 #' are
@@ -11,7 +22,8 @@
 resgf_retrieve <-
   function(object,
            node="http://esgf-node.llnl.gov/esg-search",
-           processes=1) {
+           processes=1,
+           skip.checksum=FALSE) {
 
     #Get list to retrieve
     if (attr(object,"checksums.verified")) { #Get missing and checksum failures (if any)
@@ -48,8 +60,11 @@ resgf_retrieve <-
       wget.fname <- file.path(local.dir,sprintf("%s.sh",this.filename))
       writeLines(wget.script,wget.fname)
       be.quiet <- processes > 1
-      get.this$retrieval.err.code <-
-        system(sprintf("cd %s && bash %s -s",local.dir,wget.fname),
+      bash.cmd <- sprintf("cd %s && bash %s -s",local.dir,wget.fname)
+      if(skip.checksum) bash.cmd <- sprintf("%s -p",bash.cmd)
+      get.this$retrieval.log <-
+        system(bash.cmd,
+               intern=TRUE,
                ignore.stderr = be.quiet,ignore.stdout = be.quiet)
 
       #Assuming successful completion (how to check?) delete the script

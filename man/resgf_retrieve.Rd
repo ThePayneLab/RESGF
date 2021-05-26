@@ -7,7 +7,8 @@
 resgf_retrieve(
   object,
   node = "http://esgf-node.llnl.gov/esg-search",
-  processes = 1
+  processes = 1,
+  skip.checksum = FALSE
 )
 }
 \arguments{
@@ -16,6 +17,9 @@ resgf_retrieve(
 \item{node}{ESGF node to generate wget scripts from}
 
 \item{processes}{Number of processes to run in parallel}
+
+\item{skip.checksum}{Stops the wget script from verifying the checksum of the downloaded file. Corresponds to
+activating the "-p" parameter on the wget script.}
 }
 \description{
 Retrieve missing files from ESGF
