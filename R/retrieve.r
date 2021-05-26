@@ -43,12 +43,16 @@ resgf_retrieve <-
     #Retrieval function
     retrieve.file <- function(get.this) {
       this.checksum <- get.this$checksum[[1]]
+      this.id <- get.this$id
       this.filename <- get.this$filename[[1]]
 
       #Request a wget script for the file
       search.cmd <- sprintf("%s/wget?checksum=%s",
                             node,
                             this.checksum)
+      search.cmd <- sprintf("%s/wget?id=%s",
+                            node,
+                            this.id)
       this.wget.rtn <- GET(search.cmd)
       wget.script <- content(this.wget.rtn,"text")
 
