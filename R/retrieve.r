@@ -11,21 +11,20 @@
 #' Retrieve missing files from ESGF
 #'
 #' @param object Either a resgf_status or resgf_fileset object detailing what should be retrieved
+#' @param local.dir The local directory in which to download - overrides the default taken from an resgf_status object.
 #' @param node ESGF node to generate wget scripts from
 #' @param processes Number of processes to run in parallel
-#' @param skip.checksum Stops the wget script from verifying the checksum of the downloaded file. Corresponds to
-#' activating the "-p" parameter on the wget script.
-#' @param retain.logs Retain download logs in output
+#' @param keep.script Retains the wget download script after completion.
 #'
 #' @details When a resgf_status object is supplied, only files that are not held locally (but are listed in the manifest) are retrieved. For a manifest object, all files are retrieved
 #' are
 #' @export
 resgf_retrieve <-
   function(object,
+           local.dir="missing",
            node="http://esgf-node.llnl.gov/esg-search",
            processes=1,
-           skip.checksum=FALSE,
-           retain.logs=TRUE) {
+           keep.script=FALSE) {
     
     #Check inputs
     assert_that(is.resgf_status(object)| is.resgf_fileset(object),
@@ -35,17 +34,23 @@ resgf_retrieve <-
     if(is.resgf_fileset(object)) {  #Take everything
       get.these <- 
         object %>%
-        as_tibble()
+        as_tibble() %>%
+        mutate(filename=title)
+      assert_that(!missing(local.dir),
+                  msg="local.dir argument must be supplied when object is of class resgf_fileset.")
+      
     } else if  (attr(object,"checksums.verified")) { #Get missing and checksum failures (if any)
       get.these <-
         object %>%
         as_tibble() %>%
         filter(!file.exists(local.path) | !checksum.passed)
+      local.dir <- attr(object,"local.dir")
     } else { #Only get missing
       get.these <-
         object %>%
         as_tibble() %>%
         filter(!file.exists(local.path))
+      local.dir <- attr(object,"local.dir")
     }
 
     #Retrieval function
@@ -70,22 +75,17 @@ resgf_retrieve <-
                   msg=sprintf("Multiple matches found for file %s.",this.filename))
 
       #Run the script (no authentication)
-      local.dir <- attr(object,"local.dir")
       wget.fname <- file.path(local.dir,sprintf("%s.sh",this.filename))
       writeLines(wget.script,wget.fname)
       be.quiet <- processes > 1
       bash.cmd <- sprintf("cd %s && bash %s -s",local.dir,wget.fname)
-      if(skip.checksum) bash.cmd <- sprintf("%s -p",bash.cmd)
-      retrieval.log <-
+      get.this$retrieval.status <-
         system(bash.cmd,
-               intern=TRUE,
+               intern=FALSE,
                ignore.stderr = be.quiet,ignore.stdout = be.quiet)
-      if(retain.logs) {
-        get.this$retrieval.log <- list(retrieval.log)
-      }
 
       #Assuming successful completion (how to check?) delete the script
-      file.remove(wget.fname)
+      if(!keep.script) file.remove(wget.fname)
       return(get.this)
 
     }

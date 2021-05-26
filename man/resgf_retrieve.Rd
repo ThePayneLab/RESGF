@@ -6,23 +6,22 @@
 \usage{
 resgf_retrieve(
   object,
+  local.dir = "missing",
   node = "http://esgf-node.llnl.gov/esg-search",
   processes = 1,
-  skip.checksum = FALSE,
-  retain.logs = TRUE
+  keep.script = FALSE
 )
 }
 \arguments{
-\item{object}{Either a resgf_status or resgf_manifest object detailing what should be retrieved}
+\item{object}{Either a resgf_status or resgf_fileset object detailing what should be retrieved}
+
+\item{local.dir}{The local directory in which to download - overrides the default taken from an resgf_status object.}
 
 \item{node}{ESGF node to generate wget scripts from}
 
 \item{processes}{Number of processes to run in parallel}
 
-\item{skip.checksum}{Stops the wget script from verifying the checksum of the downloaded file. Corresponds to
-activating the "-p" parameter on the wget script.}
-
-\item{retain.logs}{Retain download logs in output}
+\item{keep.script}{Retains the wget download script after completion.}
 }
 \description{
 Retrieve missing files from ESGF
