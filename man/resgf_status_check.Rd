@@ -14,7 +14,8 @@ resgf_status_check(
 \arguments{
 \item{local.dir}{Path to the local directory. Files nested in subdirectories are also detected.}
 
-\item{remote.db}{resgf_fileset object generated previously, which forms the reference database}
+\item{remote.db}{resgf_fileset object generated previously, which forms the reference database. Alternatively, another
+resgf_status object that we wish to recheck.}
 
 \item{check.checksums}{Should the comparison be done using the checksums (slow!)? Or only the filenames.}
 
