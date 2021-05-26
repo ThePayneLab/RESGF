@@ -8,7 +8,8 @@ resgf_retrieve(
   object,
   node = "http://esgf-node.llnl.gov/esg-search",
   processes = 1,
-  skip.checksum = FALSE
+  skip.checksum = FALSE,
+  retain.logs = TRUE
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ resgf_retrieve(
 
 \item{skip.checksum}{Stops the wget script from verifying the checksum of the downloaded file. Corresponds to
 activating the "-p" parameter on the wget script.}
+
+\item{retain.logs}{Retain download logs in output}
 }
 \description{
 Retrieve missing files from ESGF
