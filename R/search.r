@@ -20,6 +20,7 @@ is.resgf_fileset <- function(x) inherits(x, "resgf_fileset")
 #' @export
 print.resgf_search_result <-
   function(object) {
+    cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of results",nrow(object)))
     cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
     object %>%
@@ -30,6 +31,7 @@ print.resgf_search_result <-
 #' @export
 print.resgf_dataset <-
   function(object) {
+    cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of datasets",nrow(object)))
     cat(sprintf("%-30s : %i\n","Number of files",sum(object$number_of_files)))
     cat(sprintf("%-30s : %s bytes\n","Data size",format(sum(object$size),
@@ -45,6 +47,7 @@ print.resgf_dataset <-
 #' @export
 print.resgf_fileset <-
   function(object) {
+    cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of datasets",length(unique(object$dataset_id))))
     cat(sprintf("%-30s : %i\n","Number of files",nrow(object)))
     cat(sprintf("%-30s : %s bytes\n","Data size",format(sum(object$size),
@@ -108,6 +111,7 @@ resgf_search <-
       search.res$response$docs %>%
       as_tibble() %>%
       new_tibble(class="resgf_search_result",
+                 search.performed=Sys.time(),
                  search.cmd=search.cmd,
                  search.res=search.res,
                  nrow=nrow(.))
