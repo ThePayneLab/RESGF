@@ -10,7 +10,7 @@
 
 #' Retrieve missing files from ESGF
 #'
-#' @param object Either a resgf_status or resgf_manifest object detailing what should be retrieved
+#' @param object Either a resgf_status or resgf_fileset object detailing what should be retrieved
 #' @param node ESGF node to generate wget scripts from
 #' @param processes Number of processes to run in parallel
 #' @param skip.checksum Stops the wget script from verifying the checksum of the downloaded file. Corresponds to
@@ -26,18 +26,26 @@ resgf_retrieve <-
            processes=1,
            skip.checksum=FALSE,
            retain.logs=TRUE) {
+    
+    #Check inputs
+    assert_that(is.resgf_status(object)| is.resgf_fileset(object),
+                msg="Object must be of class resgf_status or resgf_fileset.")
 
     #Get list to retrieve
-    if (attr(object,"checksums.verified")) { #Get missing and checksum failures (if any)
+    if(is.resgf_fileset(object)) {  #Take everything
+      get.these <- 
+        object %>%
+        as_tibble()
+    } else if  (attr(object,"checksums.verified")) { #Get missing and checksum failures (if any)
       get.these <-
         object %>%
         as_tibble() %>%
-        filter(is.na(local.path) | !checksum.passed)
+        filter(!file.exists(local.path) | !checksum.passed)
     } else { #Only get missing
       get.these <-
         object %>%
         as_tibble() %>%
-        filter(is.na(local.path))
+        filter(!file.exists(local.path))
     }
 
     #Retrieval function

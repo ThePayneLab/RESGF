@@ -9,7 +9,7 @@ print.resgf_status <-
             cat(sprintf("%-30s : %s\n","Checksums verified?",attr(object,"checksums.verified")))
             cat(sprintf("%-30s : %i\n","Remote files",nrow(object)))
             cat(sprintf("%-30s : %i\n","Remote files stored locally",
-                         sum(!is.na(object$local.path))))
+                         sum(file.exists(object$local.path))))
             cat(sprintf("%-30s : %i\n","Local checksums passed",
                         sum(object$checksum.passed,na.rm = TRUE)))
             object %>%
