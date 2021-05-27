@@ -1,5 +1,4 @@
-# RESGF
-R interface to the Earth System Grid Federation (ESGF)
+# RESGF - An R interface to the Earth System Grid Federation (ESGF)
 
 by Mark R. Payne<br>
 http://www.staff.dtu.dk/mpay <br>
@@ -20,7 +19,7 @@ devtools::install_github("ThePayneLab/RESGF")
 
 ## An example
 
-How w to search a dataset.
+How to search a dataset.
 
 ```{R}
 resgf_search_datasets(variable_id=c("tos","so"),
