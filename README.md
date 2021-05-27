@@ -3,6 +3,7 @@
 by Mark R. Payne<br>
 http://www.staff.dtu.dk/mpay <br>
 @MarkPayneAtWork
+https://orcid.org/0000-0001-5795-2481
 
 An R package to facilitate searching and downloading data from the Earth System Grid Federation (ESGF).
 
