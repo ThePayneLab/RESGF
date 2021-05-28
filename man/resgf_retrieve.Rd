@@ -13,9 +13,9 @@ resgf_retrieve(
 )
 }
 \arguments{
-\item{object}{Either a resgf_status or resgf_fileset object detailing what should be retrieved}
+\item{object}{Either a resgfStatus or resgfFileset object detailing what should be retrieved}
 
-\item{local.dir}{The local directory in which to download - overrides the default taken from an resgf_status object.}
+\item{local.dir}{The local directory in which to download - overrides the default taken from an resgfStatus object.}
 
 \item{node}{ESGF node to generate wget scripts from}
 
@@ -27,6 +27,6 @@ resgf_retrieve(
 Retrieve missing files from ESGF
 }
 \details{
-When a resgf_status object is supplied, only files that are not held locally (but are listed in the manifest) are retrieved. For a manifest object, all files are retrieved
-are
+When a resgfStatus object is supplied, only files that are not held locally or that have failed checksum checks 
+(if performed)are retrieved. For a resgfFileset object, all files are retrieved.
 }

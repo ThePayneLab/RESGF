@@ -3,22 +3,22 @@
 #========================================================================
 
 #' @export
-is.resgf_search_result <- function(x) inherits(x, "resgf_search_result")
+is.resgfSearchResult <- function(x) inherits(x, "resgfSearchResult")
 
 #' @export
-is.resgf_dataset <- function(x) inherits(x, "resgf_dataset")
+is.resgfDataset <- function(x) inherits(x, "resgfDataset")
 
 #' @export
-as.resgf_dataset <- function(x) new_tibble(x,nrow=nrow(x),class="resgf_dataset")
+as.resgfDataset <- function(x) new_tibble(x,nrow=nrow(x),class="resgfDataset")
 
 #' @export
-as.resgf_fileset <- function(x) new_tibble(x,nrow=nrow(x),class="resgf_fileset")
+as.resgfFileset <- function(x) new_tibble(x,nrow=nrow(x),class="resgfFileset")
 
 #' @export
-is.resgf_fileset <- function(x) inherits(x, "resgf_fileset")
+is.resgfFileset <- function(x) inherits(x, "resgfFileset")
 
 #' @export
-print.resgf_search_result <-
+print.resgfSearchResult <-
   function(object,n=NULL) {
     cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of results",nrow(object)))
@@ -29,7 +29,7 @@ print.resgf_search_result <-
   }
 
 #' @export
-print.resgf_dataset <-
+print.resgfDataset <-
   function(object,n=NULL) {
     cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of datasets",nrow(object)))
@@ -45,7 +45,7 @@ print.resgf_dataset <-
   }
 
 #' @export
-print.resgf_fileset <-
+print.resgfFileset <-
   function(object,n=NULL) {
     cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of datasets",length(unique(object$dataset_id))))
@@ -78,8 +78,8 @@ print.resgf_fileset <-
 #' @param node URL (including "http://") of the ESGF index node to search
 #' @param search.limit Maximum number of values to return in the search. ESGF currently limits this to 10000
 #'
-#' @return resegf_search_datasets() returns an resgf_dataset object detailing the search results. resgf_search()
-#' returns an resgf_search_result object.
+#' @return resegf_search_datasets() returns an resgfDataset object detailing the search results. resgf_search()
+#' returns an resgfSearchResult object.
 #' @name searchESGF
 #' @export
 #' @examples
@@ -119,7 +119,7 @@ resgf_search <-
           simp.res
         }})) %>%
       #Convert to new class
-      new_tibble(class="resgf_search_result",
+      new_tibble(class="resgfSearchResult",
                  search.performed=Sys.time(),
                  search.cmd=search.cmd,
                  search.res=search.res,
@@ -147,7 +147,7 @@ resgf_search_datasets <-
     #Make call to generic search function
     rtn <-
       do.call(resgf_search,arg.list) %>%
-      new_tibble(class=c("resgf_dataset","resgf_search_result"))
+      new_tibble(class=c("resgfDataset","resgfSearchResult"))
 
     return(rtn)
   }
@@ -163,7 +163,7 @@ resgf_search_files <-
     #Make call to generic search function
     rtn <-
       do.call(resgf_search,arg.list) %>%
-      new_tibble(class=c("resgf_fileset","resgf_search_result"))
+      new_tibble(class=c("resgfFileset","resgfSearchResult"))
 
     return(rtn)
   }
@@ -210,7 +210,7 @@ resgf_get_filelist <-
     #Require input object to be dataset search result
     assert_that(max(object$number_of_files)< max.files,
                 msg="File chunk size is too small.")
-    assert_that(is.resgf_dataset(object),
+    assert_that(is.resgfDataset(object),
                 msg="Input must be an object returned by resgf_search_datasets().")
 
     #Because we can only receive 10000 results at a time, we need to process the results piecewise
@@ -242,7 +242,7 @@ resgf_get_filelist <-
     rtn <-
       this.fileset %>%
       bind_rows() %>%
-      new_tibble(class=c("resgf_fileset","resgf_search_result"),
+      new_tibble(class=c("resgfFileset","resgfSearchResult"),
                  nrow=nrow(.),
                  search.cmd=NULL,  #Drop this
                  search.res=NULL)

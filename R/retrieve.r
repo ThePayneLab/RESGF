@@ -10,14 +10,14 @@
 
 #' Retrieve missing files from ESGF
 #'
-#' @param object Either a resgf_status or resgf_fileset object detailing what should be retrieved
-#' @param local.dir The local directory in which to download - overrides the default taken from an resgf_status object.
+#' @param object Either a resgfStatus or resgfFileset object detailing what should be retrieved
+#' @param local.dir The local directory in which to download - overrides the default taken from an resgfStatus object.
 #' @param node ESGF node to generate wget scripts from
 #' @param processes Number of processes to run in parallel
 #' @param keep.script Retains the wget download script after completion.
 #'
-#' @details When a resgf_status object is supplied, only files that are not held locally (but are listed in the manifest) are retrieved. For a manifest object, all files are retrieved
-#' are
+#' @details When a resgfStatus object is supplied, only files that are not held locally or that have failed checksum checks 
+#' (if performed)are retrieved. For a resgfFileset object, all files are retrieved.
 #' @export
 resgf_retrieve <-
   function(object,
@@ -27,17 +27,17 @@ resgf_retrieve <-
            keep.script=FALSE) {
     
     #Check inputs
-    assert_that(is.resgf_status(object)| is.resgf_fileset(object),
-                msg="Object must be of class resgf_status or resgf_fileset.")
+    assert_that(is.resgfStatus(object)| is.resgfFileset(object),
+                msg="Object must be of class resgfStatus or resgfFileset.")
 
     #Get list to retrieve
-    if(is.resgf_fileset(object)) {  #Take everything
+    if(is.resgfFileset(object)) {  #Take everything
       get.these <- 
         object %>%
         as_tibble() %>%
         mutate(filename=title)
       assert_that(!missing(local.dir),
-                  msg="local.dir argument must be supplied when object is of class resgf_fileset.")
+                  msg="local.dir argument must be supplied when object is of class resgfFileset.")
       
     } else if  (attr(object,"checksums.verified")) { #Get missing and checksum failures (if any)
       get.these <-
@@ -106,7 +106,7 @@ resgf_retrieve <-
     #Return status object
     rtn <- new_tibble(res,
                       nrow=nrow(res),
-                      class=c("resgf_status","resgf_download_status"))
+                      class=c("resgfStatus","resgfDownloadStatus"))
     return(rtn)
 
   }

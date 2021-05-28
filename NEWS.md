@@ -4,6 +4,7 @@
 * Previous funtionality to work directly with wget scripts and their manifests removed. Instead we focus on using search results as the
   basis for retrieval.
 * Print methods for `resgf_*` objects now accept `n=...` argument
+* Renamed classes to camelCase
 
 # RESGF 0.1.0
 

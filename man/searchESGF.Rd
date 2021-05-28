@@ -25,8 +25,8 @@ resgf_search_files(...)
 \item{search.limit}{Maximum number of values to return in the search. ESGF currently limits this to 10000}
 }
 \value{
-resegf_search_datasets() returns an resgf_dataset object detailing the search results. resgf_search()
-returns an resgf_search_result object.
+resegf_search_datasets() returns an resgfDataset object detailing the search results. resgf_search()
+returns an resgfSearchResult object.
 }
 \description{
 Functions to search ESGF.
