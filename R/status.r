@@ -75,8 +75,6 @@ resgf_status_check <-
       check.these <-
         status.db %>%
         filter(!is.na(local.path)) %>%
-        mutate(checksum_type=map_chr(checksum_type,~.x),
-               checksum=map_chr(checksum,~.x)) %>%
         select(filename,local.path,id,checksum,checksum_type) %>%
         split(.,seq(nrow(.)))   #Split into individual rows for pbapply
 
