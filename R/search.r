@@ -171,12 +171,12 @@ resgf_search_files <-
 # Helpers ####
 #========================================================================
 
-#' Builds a set of search constraints for use with ESGF restful API.
-#'
-#' Internal function
-#'
-#' @param ... Constraints supplied as a named list
-#'
+# Builds a set of search constraints for use with ESGF restful API.
+#
+# Internal function
+#
+# @param ... Constraints supplied as a named list
+#
 resgf_build_constraints <- function(...) {
   #Get facet list
   facet.list <- list(...)
@@ -190,10 +190,10 @@ resgf_build_constraints <- function(...) {
   return(facet.constraints)
 }
 
-#' Simplfy an resgf tibble
-#'
-#' @param object 
-#'
+# Simplfy an resgf tibble
+#
+# @param object 
+#
 resgf_simplify <- function(object) {
     object %>%
     mutate(across(.fns=function(x) {
