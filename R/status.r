@@ -9,9 +9,10 @@ print.resgfStatus <-
             cat(sprintf("%-30s : %s\n","Checksums verified?",attr(object,"checksums.verified")))
             cat(sprintf("%-30s : %i\n","Remote files",nrow(object)))
             cat(sprintf("%-30s : %i\n","Remote files stored locally",
-                         sum(file.exists(object$local.path))))
+                         sum(!is.na(object$local.path))))
+            if(attr(object,"checksums.verified")) {
             cat(sprintf("%-30s : %i\n","Local checksums passed",
-                        sum(object$checksum.passed,na.rm = TRUE)))
+                        sum(object$checksum.passed,na.rm = TRUE)))}
             object %>%
               as_tibble() %>%
               print(n=n)
