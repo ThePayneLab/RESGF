@@ -77,6 +77,7 @@ print.resgfFileset <-
 #' @param ... A list of constraints on which to apply the search.
 #' @param node URL (including "http://") of the ESGF index node to search
 #' @param search.limit Maximum number of values to return in the search. ESGF currently limits this to 10000
+#' @param simplify Should the search function attempt to simplify the results or simply leave them as is?
 #'
 #' @return resegf_search_datasets() returns an resgfDataset object detailing the search results. resgf_search()
 #' returns an resgfSearchResult object.
@@ -90,7 +91,8 @@ print.resgfFileset <-
 resgf_search <-
   function(...,
            node="http://esgf-node.llnl.gov/esg-search",
-           search.limit=10000) {
+           search.limit=10000,
+           simplify=TRUE) {
 
   #Check inputs
   assertthat::assert_that(search.limit<=10000,msg = "ESGF currently only supports searchs of up to 10000 items")
@@ -107,18 +109,15 @@ resgf_search <-
 
   #Convert to a results table
   if(search.res$response$numFound>0) {
-    rtn <-
+    rtn.tb <-
       search.res$response$docs %>%
-      as_tibble() %>%
-      #Simplify where possible
-      mutate(across(.fns=function(x) {
-        simp.res <- simplify(x)
-        if(length(simp.res)!=length(x) | is.null(simp.res)) {
-          return(x)
-        } else {
-          simp.res
-        }})) %>%
-      #Convert to new class
+      as_tibble()
+    if(simplify) {      #Simplify where possible and if asked
+      rtn.tb <- resgf_simplify(rtn.tb)
+    }
+    #Convert to new class
+    rtn <-
+      rtn.tb %>%
       new_tibble(class="resgfSearchResult",
                  search.performed=Sys.time(),
                  search.cmd=search.cmd,
@@ -191,6 +190,20 @@ resgf_build_constraints <- function(...) {
   return(facet.constraints)
 }
 
+#' Simplfy an resgf tibble
+#'
+#' @param object 
+#'
+resgf_simplify <- function(object) {
+    object %>%
+    mutate(across(.fns=function(x) {
+        simp.res <- simplify(x)
+        if(length(simp.res)!=length(x) | is.null(simp.res)) {
+          return(x)
+        } else {
+          simp.res
+        }}))
+}
 
 #' Get the filelist
 #'
