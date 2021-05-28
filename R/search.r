@@ -246,15 +246,18 @@ resgf_get_filelist <-
     }
 
     #Now perform the search for each of these in turn
+    #Explicitly avoid simplification here - we simplify after we have combined.
     this.fileset <-
       pblapply(chunk.l,
-               function(x) {resgf_search_files(dataset_id=x$id)},
+               function(x) {resgf_search_files(dataset_id=x$id,
+                                               simplify=FALSE)},
                cl=processes)
 
     #And we're done (with some tidying)
     rtn <-
       this.fileset %>%
       bind_rows() %>%
+      resgf_simplify() %>%
       new_tibble(class=c("resgfFileset","resgfSearchResult"),
                  nrow=nrow(.),
                  search.cmd=NULL,  #Drop this
