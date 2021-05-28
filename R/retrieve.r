@@ -69,14 +69,20 @@ resgf_retrieve <-
       this.wget.rtn <- GET(search.cmd)
       wget.script <- content(this.wget.rtn,"text")
 
-      #Write to a tempfile and extract manifest
-      this.manifest <- resgf_extract_manifest(wget.script)
+      #Write to a tempfile and check manifest
+      wget.fname <- file.path(local.dir,sprintf("%s.sh",this.filename))
+      manifest.fname <- tempfile(fileext = ".manifest")
+      writeLines(wget.script,wget.fname)
+      rtn <- system2("bash",args = sprintf("%s -w %s",wget.fname,manifest.fname))
+      if(rtn!=0) {
+        stop(sprintf("Cannot extract manifest. Run 'readLines(\"%s\")' to see contents of file.",wget.fname))
+      }
+      this.manifest <- read_delim(manifest.fname,delim=" ",quote="'",col_types="cccc",
+                             col_names=c("filename","url","checksum.type","checksum"))
       assert_that(nrow(this.manifest)==1,
                   msg=sprintf("Multiple matches found for file %s.",this.filename))
 
       #Run the script (no authentication)
-      wget.fname <- file.path(local.dir,sprintf("%s.sh",this.filename))
-      writeLines(wget.script,wget.fname)
       be.quiet <- processes > 1
       bash.cmd <- sprintf("cd %s && bash %s -s",local.dir,wget.fname)
       get.this$retrieval.status <-
