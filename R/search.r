@@ -110,6 +110,15 @@ resgf_search <-
     rtn <-
       search.res$response$docs %>%
       as_tibble() %>%
+      #Simplify where possible
+      mutate(across(.fns=function(x) {
+        simp.res <- simplify(x)
+        if(length(simp.res)!=length(x) | is.null(simp.res)) {
+          return(x)
+        } else {
+          simp.res
+        }})) %>%
+      #Convert to new class
       new_tibble(class="resgf_search_result",
                  search.performed=Sys.time(),
                  search.cmd=search.cmd,
