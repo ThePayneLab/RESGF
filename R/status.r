@@ -4,7 +4,7 @@
 
 #' @export
 print.resgf_status <-
-          function(object) {
+          function(object,n=NULL) {
             cat(sprintf("%-30s : %s\n","Local directory",attr(object,"local.dir")))
             cat(sprintf("%-30s : %s\n","Checksums verified?",attr(object,"checksums.verified")))
             cat(sprintf("%-30s : %i\n","Remote files",nrow(object)))
@@ -14,7 +14,7 @@ print.resgf_status <-
                         sum(object$checksum.passed,na.rm = TRUE)))
             object %>%
               as_tibble() %>%
-              print()
+              print(n=n)
           }
 
 #' @export
