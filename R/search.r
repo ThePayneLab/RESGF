@@ -19,18 +19,18 @@ is.resgf_fileset <- function(x) inherits(x, "resgf_fileset")
 
 #' @export
 print.resgf_search_result <-
-  function(object) {
+  function(object,n=NULL) {
     cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of results",nrow(object)))
     cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
     object %>%
       as_tibble() %>%
-      print()
+      print(n=n)
   }
 
 #' @export
 print.resgf_dataset <-
-  function(object) {
+  function(object,n=NULL) {
     cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of datasets",nrow(object)))
     cat(sprintf("%-30s : %i\n","Number of files",sum(object$number_of_files)))
@@ -41,12 +41,12 @@ print.resgf_dataset <-
     cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
     object %>%
       as_tibble() %>%
-      print()
+      print(n=n)
   }
 
 #' @export
 print.resgf_fileset <-
-  function(object) {
+  function(object,n=NULL) {
     cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
     cat(sprintf("%-30s : %i\n","Number of datasets",length(unique(object$dataset_id))))
     cat(sprintf("%-30s : %i\n","Number of files",nrow(object)))
@@ -57,7 +57,7 @@ print.resgf_fileset <-
     cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
     object %>%
       as_tibble() %>%
-      print()
+      print(n=n)
   }
 
 #========================================================================
