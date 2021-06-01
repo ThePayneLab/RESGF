@@ -7,7 +7,7 @@
 resgf_get_filelist(object, max.files = 1000, max.datasets = 10, processes = 1)
 }
 \arguments{
-\item{object}{resegf_dataset object from which to retrieve the underlying files}
+\item{object}{resgfDataset object from which to retrieve the underlying files}
 
 \item{max.files}{maximum number of files to be returned in a chunk}
 

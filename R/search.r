@@ -93,46 +93,54 @@ resgf_search <-
            node="http://esgf-node.llnl.gov/esg-search",
            search.limit=10000,
            simplify=TRUE) {
-
-  #Check inputs
-  assertthat::assert_that(search.limit<=10000,msg = "ESGF currently only supports searchs of up to 10000 items")
-
-  #Build search command
-
-  search.cmd <- sprintf("%s/search?format=application%%2Fsolr%%2Bjson&limit=%i&%s",
-                        node,
-                        search.limit,
-                        resgf_build_constraints(...))
-
-  #Do first search
-  search.res <- fromJSON(search.cmd,flatten=TRUE)
-
-  #Convert to a results table
-  if(search.res$response$numFound>0) {
-    rtn.tb <-
-      search.res$response$docs %>%
-      as_tibble()
-    if(simplify) {      #Simplify where possible and if asked
-      rtn.tb <- resgf_simplify(rtn.tb)
+    
+    #Check inputs
+    assertthat::assert_that(search.limit<=10000,msg = "ESGF currently only supports searchs of up to 10000 items")
+    
+    #Build the constraints
+    facet.constraints <-
+      list(...) %>%
+      enframe() %>%
+      unnest(value) %>%
+      mutate(cmd=sprintf("%s=%s",name,value)) %>%
+      pull(cmd) %>%
+      paste(sep="",collapse="&")
+    
+    #Build search command
+    search.cmd <- sprintf("%s/search?format=application%%2Fsolr%%2Bjson&limit=%i&%s",
+                          node,
+                          search.limit,
+                          facet.constraints)
+    
+    #Do first search
+    search.res <- fromJSON(search.cmd,flatten=TRUE)
+    
+    #Convert to a results table
+    if(search.res$response$numFound>0) {
+      rtn.tb <-
+        search.res$response$docs %>%
+        as_tibble()
+      if(simplify) {      #Simplify where possible and if asked
+        rtn.tb <- resgf_simplify(rtn.tb)
+      }
+      #Convert to new class
+      rtn <-
+        rtn.tb %>%
+        new_tibble(class="resgfSearchResult",
+                   search.performed=Sys.time(),
+                   search.cmd=search.cmd,
+                   search.res=search.res,
+                   nrow=nrow(.))
+      
+      #Check output
+      if(nrow(rtn)>=search.limit) warning("Number of results may be constrained by the search limit.")
+      
+    } else {
+      rtn <- NULL
     }
-    #Convert to new class
-    rtn <-
-      rtn.tb %>%
-      new_tibble(class="resgfSearchResult",
-                 search.performed=Sys.time(),
-                 search.cmd=search.cmd,
-                 search.res=search.res,
-                 nrow=nrow(.))
-
-    #Check output
-    if(nrow(rtn)>=search.limit) warning("Number of results may be constrained by the search limit.")
-
-  } else {
-    rtn <- NULL
+    
+    return(rtn)
   }
-
-  return(rtn)
-}
 
 
 #' @export
@@ -147,7 +155,7 @@ resgf_search_datasets <-
     rtn <-
       do.call(resgf_search,arg.list) %>%
       new_tibble(class=c("resgfDataset","resgfSearchResult"))
-
+    
     return(rtn)
   }
 
@@ -163,46 +171,31 @@ resgf_search_files <-
     rtn <-
       do.call(resgf_search,arg.list) %>%
       new_tibble(class=c("resgfFileset","resgfSearchResult"))
-
+    
     return(rtn)
   }
 
 #========================================================================
 # Helpers ####
 #========================================================================
-
-# Builds a set of search constraints for use with ESGF restful API.
-#
-# Internal function
-#
-# @param ... Constraints supplied as a named list
-#
-resgf_build_constraints <- function(...) {
-  #Get facet list
-  facet.list <- list(...)
-  #Build a search command
-  facet.constraints <-
-    enframe(facet.list) %>%
-    unnest(value) %>%
-    mutate(cmd=sprintf("%s=%s",name,value)) %>%
-    pull(cmd) %>%
-    paste(sep="",collapse="&")
-  return(facet.constraints)
-}
-
-# Simplfy an resgf tibble
-#
-# @param object 
-#
+#' Simplify an resgf* object
+#' 
+#' The datasets returned by searching resgf don't always parse conveniently into a tibble - some columns end up as
+#' lists, rather than vectors. This function simplifies and makes that conversion where it can.
+#'
+#' @param object Raw object to simplify
+#'
+#' @return
+#' @export
 resgf_simplify <- function(object) {
-    object %>%
+  object %>%
     mutate(across(.fns=function(x) {
-        simp.res <- simplify(x)
-        if(length(simp.res)!=length(x) | is.null(simp.res)) {
-          return(x)
-        } else {
-          simp.res
-        }}))
+      simp.res <- simplify(x)
+      if(length(simp.res)!=length(x) | is.null(simp.res)) {
+        return(x)
+      } else {
+        simp.res
+      }}))
 }
 
 #' Get the filelist
@@ -211,7 +204,7 @@ resgf_simplify <- function(object) {
 #' overloading both the number of return values and the ability to issue the command, and can optionally
 #' be done in parallel as well.
 #'
-#' @param object resegf_dataset object from which to retrieve the underlying files
+#' @param object resgfDataset object from which to retrieve the underlying files
 #' @param max.files maximum number of files to be returned in a chunk
 #' @param max.datasets maximum number of datasets to request in a chunk
 #' @param processes Number of processes to perform in parallel
@@ -225,7 +218,7 @@ resgf_get_filelist <-
                 msg="File chunk size is too small.")
     assert_that(is.resgfDataset(object),
                 msg="Input must be an object returned by resgf_search_datasets().")
-
+    
     #Because we can only receive 10000 results at a time, we need to process the results piecewise
     this.chunk <- 1
     to.assign <-
@@ -233,7 +226,7 @@ resgf_get_filelist <-
       as_tibble() %>%
       select(id,number_of_files)
     chunk.l <- list()
-
+    
     while (nrow(to.assign)>0) {
       #Make cumulative list
       to.assign$cumsum <- cumsum(to.assign$number_of_files)
@@ -244,7 +237,7 @@ resgf_get_filelist <-
       #Housekeeping
       this.chunk <- this.chunk +1
     }
-
+    
     #Now perform the search for each of these in turn
     #Explicitly avoid simplification here - we simplify after we have combined.
     this.fileset <-
@@ -252,7 +245,7 @@ resgf_get_filelist <-
                function(x) {resgf_search_files(dataset_id=x$id,
                                                simplify=FALSE)},
                cl=processes)
-
+    
     #And we're done (with some tidying)
     rtn <-
       this.fileset %>%
@@ -262,6 +255,6 @@ resgf_get_filelist <-
                  nrow=nrow(.),
                  search.cmd=NULL,  #Drop this
                  search.res=NULL)
-
-}
+    
+  }
 
