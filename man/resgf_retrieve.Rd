@@ -9,7 +9,7 @@ resgf_retrieve(
   local.dir = "missing",
   node = "http://esgf-node.llnl.gov/esg-search",
   processes = 1,
-  keep.script = FALSE
+  keep.tempfiles = FALSE
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ resgf_retrieve(
 
 \item{processes}{Number of processes to run in parallel}
 
-\item{keep.script}{Retains the wget download script after completion.}
+\item{keep.tempfiles}{Retains the wget download script and log files after completion.}
 }
 \description{
 Retrieve missing files from ESGF
@@ -29,4 +29,8 @@ Retrieve missing files from ESGF
 \details{
 When a resgfStatus object is supplied, only files that are not held locally or that have failed checksum checks 
 (if performed)are retrieved. For a resgfFileset object, all files are retrieved.
+
+The download scripts are always written to local.dir with the extension *.sh. If run in parallel, 
+log files are also written to the local.dir with the extension .sh.log. Normally these are deleted upon a successful 
+completion, but they can be retained using the keep.tempfiles argument.
 }

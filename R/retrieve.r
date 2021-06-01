@@ -14,17 +14,21 @@
 #' @param local.dir The local directory in which to download - overrides the default taken from an resgfStatus object.
 #' @param node ESGF node to generate wget scripts from
 #' @param processes Number of processes to run in parallel
-#' @param keep.script Retains the wget download script after completion.
+#' @param keep.tempfiles Retains the wget download script and log files after completion.
 #'
 #' @details When a resgfStatus object is supplied, only files that are not held locally or that have failed checksum checks 
 #' (if performed)are retrieved. For a resgfFileset object, all files are retrieved.
+#' 
+#' The download scripts are always written to local.dir with the extension *.sh. If run in parallel, 
+#' log files are also written to the local.dir with the extension .sh.log. Normally these are deleted upon a successful 
+#' completion, but they can be retained using the keep.tempfiles argument.
 #' @export
 resgf_retrieve <-
   function(object,
            local.dir="missing",
            node="http://esgf-node.llnl.gov/esg-search",
            processes=1,
-           keep.script=FALSE) {
+           keep.tempfiles=FALSE) {
     
     #Check inputs
     assert_that(is.resgfStatus(object)| is.resgfFileset(object),
@@ -83,30 +87,36 @@ resgf_retrieve <-
                   msg=sprintf("Multiple matches found for file %s.",this.filename))
 
       #Run the script (no authentication)
-      be.quiet <- processes > 1
+      log.this <- processes > 1
       bash.cmd <- sprintf("cd %s && bash %s -s",local.dir,wget.fname)
-      get.this$retrieval.status <-
-        system(bash.cmd,
-               intern=FALSE,
-               ignore.stderr = be.quiet,ignore.stdout = be.quiet)
+      log.file <- sprintf("%s.log",wget.fname)
+      if(log.this) bash.cmd <- sprintf("%s > %s 2>&1",bash.cmd,log.file)
+      get.this$retrieval.status <- system(bash.cmd,intern=FALSE)
 
       #Assuming successful completion (how to check?) delete the script
-      if(!keep.script) file.remove(wget.fname)
+      if(!keep.tempfiles) file.remove(wget.fname)
+      if(!keep.tempfiles & log.this) file.remove(log.file)
+      
       return(get.this)
 
     }
 
-    #Do retrieval
-    res <-
-      get.these %>%
-      split(.,1:nrow(.)) %>%
-      pblapply(retrieve.file,cl=processes) %>%
-      bind_rows()
-
+    #Do retrieval (or no{t)
+    if(nrow(get.these)==0) {
+      message("Nothing to do here - all files appear to be up to date.")
+      return(NULL)
+    } else {
+      message(sprintf("Retrieving %i files...",nrow(get.these)))
+      res <-
+        get.these %>%
+        split(.,1:nrow(.)) %>%
+        pblapply(retrieve.file,cl=processes) %>%
+        bind_rows()
+      
     #Return status object
     rtn <- new_tibble(res,
                       nrow=nrow(res),
                       class=c("resgfStatus","resgfDownloadStatus"))
-    return(rtn)
+    return(rtn)}
 
   }
