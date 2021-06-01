@@ -11,6 +11,9 @@ resgf_search(
   ...,
   node = "http://esgf-node.llnl.gov/esg-search",
   search.limit = 10000,
+  show.all.replicas = FALSE,
+  show.all.versions = FALSE,
+  search.local.node.only = FALSE,
   simplify = TRUE
 )
 
@@ -24,6 +27,13 @@ resgf_search_files(...)
 \item{node}{URL (including "http://") of the ESGF index node to search}
 
 \item{search.limit}{Maximum number of values to return in the search. ESGF currently limits this to 10000}
+
+\item{show.all.replicas}{Show all copies (replicas) of a file or dataset (TRUE) or just the "original". Defaults to FALSE}
+
+\item{show.all.versions}{Should the result showsall versions of a file or dataset? Defaults to FALSE}
+
+\item{search.local.node.only}{Should just the local index node be searched (TRUE) or a distributed search across 
+the entire ESGF be used (FALSE). Defaults to FALSE.}
 
 \item{simplify}{Should the search function attempt to simplify the results or simply leave them as is?}
 }

@@ -77,6 +77,10 @@ print.resgfFileset <-
 #' @param ... A list of constraints on which to apply the search.
 #' @param node URL (including "http://") of the ESGF index node to search
 #' @param search.limit Maximum number of values to return in the search. ESGF currently limits this to 10000
+#' @param show.all.replicas Show all copies (replicas) of a file or dataset (TRUE) or just the "original". Defaults to FALSE
+#' @param show.all.versions Should the result showsall versions of a file or dataset? Defaults to FALSE
+#' @param search.local.node.only Should just the local index node be searched (TRUE) or a distributed search across 
+#' the entire ESGF be used (FALSE). Defaults to FALSE.
 #' @param simplify Should the search function attempt to simplify the results or simply leave them as is?
 #'
 #' @return resegf_search_datasets() returns an resgfDataset object detailing the search results. resgf_search()
@@ -92,6 +96,9 @@ resgf_search <-
   function(...,
            node="http://esgf-node.llnl.gov/esg-search",
            search.limit=10000,
+           show.all.replicas=FALSE,
+           show.all.versions=FALSE,
+           search.local.node.only=FALSE,
            simplify=TRUE) {
     
     #Check inputs
@@ -111,6 +118,9 @@ resgf_search <-
                           node,
                           search.limit,
                           facet.constraints)
+    if(!show.all.replicas) search.cmd <- paste0(search.cmd,'&replica="false"')
+    if(!show.all.versions) search.cmd <- paste0(search.cmd,'&latest="true"')
+    if(search.local.node.only) search.cmd <- paste0(search.cmd,'&distrib="false"')
     
     #Do first search
     search.res <- fromJSON(search.cmd,flatten=TRUE)
