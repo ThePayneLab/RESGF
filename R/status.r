@@ -164,7 +164,7 @@ resgf_status_by_field <- function(object,field.idx=1,field.sep="_") {
 #' @name summariseStatus
 resgf_status_by_node <- function(object) {
   assert_that(is(object,"resgfStatus"),
-              msg="Supplied object is not an resgf_status object")
+              msg="Supplied object is not an resgfStatus object")
   object %>%
     group_by(data_node) %>%
     summarise(remote.files=n(),
