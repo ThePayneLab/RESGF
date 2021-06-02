@@ -24,7 +24,7 @@ is.resgfStatus <- function(x) inherits(x, "resgfStatus")
 #' @export
 dplyr_reconstruct.resgfStatus = function(data, template) {
   # Return a tibble if filename is lost
-  if(!all(c("filename","local.path","id") %in% colnames(data))) {
+  if(!all(c("filename","local.path","id","locally.valid","checksum.passed") %in% colnames(data))) {
     return(as_tibble(data))
   } else {
     return(new_tibble(data,
