@@ -24,11 +24,12 @@ dplyr_reconstruct.resgfSearchResult <- function(data, template){
   if(!all(c("id") %in% colnames(data))) {
     return(as_tibble(data))
   } else {
-    return(new_tibble(class="resgfSearchResult",
+    return(new_tibble(data,
+                      class=class(template)[1],
                       search.performed=attr(template,"search.performed"),
                       search.cmd=attr(template,"search.cmd"),
-                      search.res=attr(object,"search.res"),
-                      nrow=nrow(template)))
+                      search.res=attr(template,"search.res"),
+                      nrow=nrow(data)))
   }
 }
 

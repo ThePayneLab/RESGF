@@ -28,7 +28,7 @@ dplyr_reconstruct.resgfStatus = function(data, template) {
     return(as_tibble(data))
   } else {
     return(new_tibble(data,
-                      nrow=nrow(template),
+                      nrow=nrow(data),
                       class="resgfStatus",
                       local.dir=attr(template,"local.dir"),
                       checksums.verified=attr(template,"checksums.verified")))
