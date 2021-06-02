@@ -21,6 +21,26 @@ print.resgfStatus <-
 #' @export
 is.resgfStatus <- function(x) inherits(x, "resgfStatus")
 
+#' @export
+dplyr_reconstruct.resgfStatus = function(data, template) {
+  # Return a tibble if filename is lost
+  if(!all(c("filename","local.path","id") %in% colnames(data))) {
+    return(as_tibble(data))
+  } else {
+    return(new_tibble(data,
+                      nrow=nrow(template),
+                      class="resgfStatus",
+                      local.dir=attr(template,"local.dir"),
+                      checksums.verified=attr(template,"checksums.verified")))
+  }
+}
+
+#' @export
+`[.resgfStatus` <- function(x, i, j, drop = FALSE, ...) {
+  out <- NextMethod()
+  dplyr_reconstruct(out, x)
+}
+
 #========================================================================
 # Perform check ####
 #========================================================================

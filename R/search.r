@@ -2,20 +2,10 @@
 # Setup classes ####
 #========================================================================
 
+#resgfSearchResult class---------------------
+
 #' @export
 is.resgfSearchResult <- function(x) inherits(x, "resgfSearchResult")
-
-#' @export
-is.resgfDataset <- function(x) inherits(x, "resgfDataset")
-
-#' @export
-as.resgfDataset <- function(x) new_tibble(x,nrow=nrow(x),class="resgfDataset")
-
-#' @export
-as.resgfFileset <- function(x) new_tibble(x,nrow=nrow(x),class="resgfFileset")
-
-#' @export
-is.resgfFileset <- function(x) inherits(x, "resgfFileset")
 
 #' @export
 print.resgfSearchResult <-
@@ -27,6 +17,35 @@ print.resgfSearchResult <-
       as_tibble() %>%
       print(n=n)
   }
+
+#' @export
+dplyr_reconstruct.resgfSearchResult <- function(data, template){
+  # Return a tibble if filename is lost
+  if(!all(c("id") %in% colnames(data))) {
+    return(as_tibble(data))
+  } else {
+    return(new_tibble(class="resgfSearchResult",
+                      search.performed=attr(template,"search.performed"),
+                      search.cmd=attr(template,"search.cmd"),
+                      search.res=attr(object,"search.res"),
+                      nrow=nrow(template)))
+  }
+}
+
+#' @export
+`[.resgfSearchResult` <- function(x, i, j, drop = FALSE, ...) {
+  out <- NextMethod()
+  dplyr_reconstruct(out, x)
+}
+
+# resgfDataset class-----------------------------------
+
+#' @export
+is.resgfDataset <- function(x) inherits(x, "resgfDataset")
+
+#' @export
+as.resgfDataset <- function(x) new_tibble(x,nrow=nrow(x),class="resgfDataset")
+
 
 #' @export
 print.resgfDataset <-
@@ -44,6 +63,21 @@ print.resgfDataset <-
   }
 
 #' @export
+dplyr_reconstruct.resgfDataset <- dplyr_reconstruct.resgfSearchResult
+
+#' @export
+`[.resgfDataset` <- `[.resgfSearchResult`
+
+# resgfFileset class-----------------------------------
+
+#' @export
+as.resgfFileset <- function(x) new_tibble(x,nrow=nrow(x),class="resgfFileset")
+
+#' @export
+is.resgfFileset <- function(x) inherits(x, "resgfFileset")
+
+
+#' @export
 print.resgfFileset <-
   function(object,n=NULL) {
     pretty.hdr(object,NULL,"%-30s : %s\n","Search performed",attr(object,"search.performed"))
@@ -57,6 +91,12 @@ print.resgfFileset <-
       as_tibble() %>%
       print(n=n)
   }
+
+#' @export
+dplyr_reconstruct.resgfFileset <- dplyr_reconstruct.resgfSearchResult
+
+#' @export
+`[.resgfFileset` <- `[.resgfSearchResult`
 
 #Only displays information if key columns exist
 pretty.hdr <- function(object,cols=NULL,fmt.str,...) {
@@ -185,7 +225,7 @@ resgf_search_datasets <-
     rtn <-
       do.call(resgf_search,arg.list) %>%
       new_tibble(.,
-                 class=c("resgfDataset","resgfSearchResult"),
+                 class=c("resgfDataset"),
                  nrow=nrow(.))
     
     return(rtn)
@@ -203,7 +243,7 @@ resgf_search_files <-
     rtn <-
       do.call(resgf_search,arg.list) %>%
       new_tibble(.,
-                 class=c("resgfFileset","resgfSearchResult"),
+                 class=c("resgfFileset"),
                  nrow=nrow(.))
     
     return(rtn)
@@ -285,7 +325,7 @@ resgf_get_filelist <-
       this.fileset %>%
       bind_rows() %>%
       resgf_simplify() %>%
-      new_tibble(class=c("resgfFileset","resgfSearchResult"),
+      new_tibble(class=c("resgfFileset"),
                  nrow=nrow(.),
                  search.cmd=NULL,  #Drop this
                  search.res=NULL)

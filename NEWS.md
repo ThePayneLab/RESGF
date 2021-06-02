@@ -7,6 +7,7 @@
 * Renamed classes to camelCase
 * `resgf_retrieve` now writes log files when running in parallel, as a way to keep track of activity
 * `resgf_search()` now has sensible defaults for replicas, versions and distributed search to avoid some easy traps
+* Support for `dplyr` methods formalised by addition of `dplyr_reconstruct` methods.
 
 # RESGF 0.1.0
 
