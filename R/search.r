@@ -20,9 +20,9 @@ is.resgfFileset <- function(x) inherits(x, "resgfFileset")
 #' @export
 print.resgfSearchResult <-
   function(object,n=NULL) {
-    cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
-    cat(sprintf("%-30s : %i\n","Number of results",nrow(object)))
-    cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
+    pretty.hdr(object,NULL,"%-30s : %s\n","Search performed",attr(object,"search.performed"))
+    pretty.hdr(object,NULL,"%-30s : %i\n","Number of results",nrow(object))
+    pretty.hdr(object,NULL,"%-30s : %s\n","Search command",attr(object,"search.cmd"))
     object %>%
       as_tibble() %>%
       print(n=n)
@@ -31,14 +31,13 @@ print.resgfSearchResult <-
 #' @export
 print.resgfDataset <-
   function(object,n=NULL) {
-    cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
-    cat(sprintf("%-30s : %i\n","Number of datasets",nrow(object)))
-    cat(sprintf("%-30s : %i\n","Number of files",sum(object$number_of_files)))
-    cat(sprintf("%-30s : %s bytes\n","Data size",format(sum(object$size),
-                                                        digits=3,scientific=TRUE)))
-    cat(sprintf("%-30s : %s\n","Proportion replicas",format(mean(object$replica),
-                                                            digits=2)))
-    cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
+    pretty.hdr(object,NULL,"%-30s : %s\n","Search performed",attr(object,"search.performed"))
+    pretty.hdr(object,NULL,"%-30s : %i\n","Number of datasets",nrow(object))
+    pretty.hdr(object,"number_of_files","%-30s : %i\n","Number of files",sum(object$number_of_files))
+    pretty.hdr(object,"size","%-30s : %s\n","Data size",pretty.filesize(sum(object$size)))
+    pretty.hdr(object,"replica","%-30s : %s\n","Proportion replicas",
+               format(mean(object$replica),digits=2))
+    pretty.hdr(object,NULL,"%-30s : %s\n","Search command",attr(object,"search.cmd"))
     object %>%
       as_tibble() %>%
       print(n=n)
@@ -47,18 +46,39 @@ print.resgfDataset <-
 #' @export
 print.resgfFileset <-
   function(object,n=NULL) {
-    cat(sprintf("%-30s : %s\n","Search performed",attr(object,"search.performed")))
-    cat(sprintf("%-30s : %i\n","Number of datasets",length(unique(object$dataset_id))))
-    cat(sprintf("%-30s : %i\n","Number of files",nrow(object)))
-    cat(sprintf("%-30s : %s bytes\n","Data size",format(sum(object$size),
-                                                        digits=3,scientific=TRUE)))
-    cat(sprintf("%-30s : %s\n","Proportion replicas",format(mean(object$replica),
-                                                            digits=2)))
-    cat(sprintf("%-30s : %s\n","Search command",attr(object,"search.cmd")))
+    pretty.hdr(object,NULL,"%-30s : %s\n","Search performed",attr(object,"search.performed"))
+    pretty.hdr(object,"dataset_id","%-30s : %i\n","Number of datasets",length(unique(object$dataset_id)))
+    pretty.hdr(object,NULL,"%-30s : %i\n","Number of files",nrow(object))
+    pretty.hdr(object,"size","%-30s : %s\n","Data size",pretty.filesize(sum(object$size)))
+    pretty.hdr(object,"replica","%-30s : %s\n","Proportion replicas",
+               format(mean(object$replica),digits=2))
+    pretty.hdr(object,NULL,"%-30s : %s\n","Search command",attr(object,"search.cmd"))
     object %>%
       as_tibble() %>%
       print(n=n)
   }
+
+#Only displays information if key columns exist
+pretty.hdr <- function(object,cols=NULL,fmt.str,...) {
+  if(all(cols %in% colnames(object)) | is.null(cols)) {
+    cat(sprintf(fmt.str,...))
+  }
+}
+
+pretty.filesize <- function(x) {
+  #Get units first
+  unit.exp <- floor(log10(x)/3)*3
+  unit.txt <- switch(as.character(unit.exp),
+                      "0"="B",
+                      "3"="kB",
+                      "6"="MB",
+                      "9"="GB",
+                      "12"="TB",
+                      "15"="PB",
+                      stop("Unknown filesize"))
+  #Format text accordingly
+  sprintf("%s %s",format(x/10^unit.exp,digits=3),unit.txt)
+}
 
 #========================================================================
 # Search ####
