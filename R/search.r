@@ -164,7 +164,9 @@ resgf_search_datasets <-
     #Make call to generic search function
     rtn <-
       do.call(resgf_search,arg.list) %>%
-      new_tibble(class=c("resgfDataset","resgfSearchResult"))
+      new_tibble(.,
+                 class=c("resgfDataset","resgfSearchResult"),
+                 nrow=nrow(.))
     
     return(rtn)
   }
@@ -180,7 +182,9 @@ resgf_search_files <-
     #Make call to generic search function
     rtn <-
       do.call(resgf_search,arg.list) %>%
-      new_tibble(class=c("resgfFileset","resgfSearchResult"))
+      new_tibble(.,
+                 class=c("resgfFileset","resgfSearchResult"),
+                 nrow=nrow(.))
     
     return(rtn)
   }
