@@ -8,8 +8,8 @@ print.resgfStatus <-
             cat(sprintf("%-30s : %s\n","Local directory",attr(object,"local.dir")))
             cat(sprintf("%-30s : %s\n","Checksums verified?",attr(object,"checksums.verified")))
             cat(sprintf("%-30s : %i\n","Remote files",nrow(object)))
-            cat(sprintf("%-30s : %i\n","Remote files stored locally",
-                         sum(!is.na(object$local.path))))
+            cat(sprintf("%-30s : %i\n","Valid local files",
+                         sum(object$locally.valid)))
             if(attr(object,"checksums.verified")) {
             cat(sprintf("%-30s : %i\n","Local checksums passed",
                         sum(object$checksum.passed,na.rm = TRUE)))}
@@ -66,16 +66,22 @@ resgf_status_check <-
       remote.db %>%
       as_tibble() %>%
       mutate(filename=title)%>%
-      right_join(x=local.db,by="filename")
+      right_join(x=local.db,by="filename") 
+    
+    #Add check for zero file size
+    status.db <-
+      status.db %>%
+      mutate(locally.valid=map_if(local.path,!is.na(local.path),~file.size(.x)!=0,.else=~FALSE),
+             locally.valid=map_lgl(locally.valid,~.x))
 
     #Here we would do the checksum check
     if(check.checksums) {
       #Best if we do it via pblapply, to allow parallelisation. This requires
-      #first separating out the files to checksum, doing the analysis, and then recombinin
+      #first separating out the files to checksum, doing the analysis, and then recombining
       #Obviously only check the files that we have locally
       check.these <-
         status.db %>%
-        filter(!is.na(local.path)) %>%
+        filter(!locally.valid) %>%
         select(filename,local.path,id,checksum,checksum_type) %>%
         split(.,seq(nrow(.)))   #Split into individual rows for pbapply
 
@@ -152,8 +158,8 @@ resgf_status_by_field <- function(object,field.idx=1,field.sep="_") {
     mutate(field.value=field[,field.idx]) %>%
     group_by(field.value) %>%
     summarise(remote.files=n(),
-              local.files=sum(!is.na(local.path)),
-              prop=mean(!is.na(local.path)),
+              local.files=sum(locally.valid),
+              prop=mean(locally.valid),
               checksums.ok=sum(checksum.passed),
               prop.checksums=mean(checksum.passed),
               .groups="drop")
@@ -168,8 +174,8 @@ resgf_status_by_node <- function(object) {
   object %>%
     group_by(data_node) %>%
     summarise(remote.files=n(),
-              local.files=sum(!is.na(local.path)),
-              prop=mean(!is.na(local.path)),
+              local.files=sum(locally.valid),
+              prop=mean(locally.valid),
               checksums.ok=sum(checksum.passed),
               prop.checksums=mean(checksum.passed),
               .groups="drop")
