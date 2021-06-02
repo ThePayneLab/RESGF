@@ -81,7 +81,7 @@ resgf_status_check <-
       #Obviously only check the files that we have locally
       check.these <-
         status.db %>%
-        filter(!locally.valid) %>%
+        filter(locally.valid) %>%
         select(filename,local.path,id,checksum,checksum_type) %>%
         split(.,seq(nrow(.)))   #Split into individual rows for pbapply
 
