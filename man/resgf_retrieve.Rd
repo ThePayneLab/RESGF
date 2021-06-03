@@ -9,7 +9,8 @@ resgf_retrieve(
   local.dir = "missing",
   node = "http://esgf-node.llnl.gov/esg-search",
   processes = 1,
-  keep.tempfiles = FALSE
+  keep.tempfiles = FALSE,
+  connect.insecurely = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ resgf_retrieve(
 \item{processes}{Number of processes to run in parallel}
 
 \item{keep.tempfiles}{Retains the wget download script and log files after completion.}
+
+\item{connect.insecurely}{Connect to server insecurely, by enabling the "--no-check-certificate" flag}
 }
 \description{
 Retrieve missing files from ESGF
