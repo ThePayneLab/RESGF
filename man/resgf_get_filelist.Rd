@@ -4,7 +4,13 @@
 \alias{resgf_get_filelist}
 \title{Get the filelist}
 \usage{
-resgf_get_filelist(object, max.files = 1000, max.datasets = 10, processes = 1)
+resgf_get_filelist(
+  object,
+  max.files = 1000,
+  max.datasets = 10,
+  processes = 1,
+  index.node = getOption("resgf.indexNode")
+)
 }
 \arguments{
 \item{object}{resgfDataset object from which to retrieve the underlying files}
@@ -14,6 +20,9 @@ resgf_get_filelist(object, max.files = 1000, max.datasets = 10, processes = 1)
 \item{max.datasets}{maximum number of datasets to request in a chunk}
 
 \item{processes}{Number of processes to perform in parallel}
+
+\item{index.node}{URL (including "http://") of the ESGF index node to search. Defaults to options("resgf.indexNode"). 
+Passed in this instance further to `resgf_search*()`}
 }
 \value{
 

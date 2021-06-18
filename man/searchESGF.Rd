@@ -9,7 +9,7 @@
 \usage{
 resgf_search(
   ...,
-  node = "http://esgf-node.llnl.gov/esg-search",
+  index.node = getOption("resgf.indexNode"),
   search.limit = 10000,
   show.all.replicas = FALSE,
   show.all.versions = FALSE,
@@ -24,7 +24,7 @@ resgf_search_files(...)
 \arguments{
 \item{...}{A list of constraints on which to apply the search.}
 
-\item{node}{URL (including "http://") of the ESGF index node to search}
+\item{index.node}{URL (including "http://") of the ESGF index node to search. Defaults to options("resgf.indexNode")}
 
 \item{search.limit}{Maximum number of values to return in the search. ESGF currently limits this to 10000}
 

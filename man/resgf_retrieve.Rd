@@ -24,7 +24,7 @@ resgf_retrieve(
 
 \item{keep.tempfiles}{Retains the wget download script and log files after completion.}
 
-\item{connect.insecurely}{Connect to server insecurely, by enabling the "--no-check-certificate" flag}
+\item{connect.insecurely}{Connect to server insecurely (ignoring certificates), by enabling the "-i" flag}
 }
 \description{
 Retrieve missing files from ESGF

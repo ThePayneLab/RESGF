@@ -15,7 +15,7 @@
 #' @param node ESGF node to generate wget scripts from
 #' @param processes Number of processes to run in parallel
 #' @param keep.tempfiles Retains the wget download script and log files after completion.
-#' @param connect.insecurely Connect to server insecurely, by enabling the "--no-check-certificate" flag
+#' @param connect.insecurely Connect to server insecurely (ignoring certificates), by enabling the "-i" flag
 #'
 #' @details When a resgfStatus object is supplied, only files that are not held locally or that have failed checksum checks 
 #' (if performed)are retrieved. For a resgfFileset object, all files are retrieved.
@@ -91,7 +91,7 @@ resgf_retrieve <-
       #Run the script (no authentication)
       log.this <- processes > 1
       bash.cmd <- sprintf("cd %s && bash %s -s",local.dir,wget.fname)
-      if(connect.insecurely) bash.cmd <- paste(bash.cmd,"--no-check-certificate")
+      if(connect.insecurely) bash.cmd <- paste(bash.cmd,"-i")
       log.file <- sprintf("%s.log",wget.fname)
       if(log.this) bash.cmd <- sprintf("%s > %s 2>&1",bash.cmd,log.file)
       get.this$retrieval.status <- system(bash.cmd,intern=FALSE)
