@@ -20,3 +20,13 @@ resgf_get_indexNode <- function() {
 resgf_set_indexNode <- function(node) {
   options("resgf.indexNode"=node)
 }
+
+#' @name default
+#' @export
+resgf_get_node_status <- function() {
+    require(rvest)
+    rvest::read_html("https://esgf-node.llnl.gov/status/") %>%
+    html_table() %>%
+    magrittr::extract2(3) %>%
+    select(-1,data_node=`Data Node`,status=Status)
+}
