@@ -9,7 +9,7 @@ resgf_get_filelist(
   max.files = 1000,
   max.datasets = 10,
   processes = 1,
-  index.node = getOption("resgf.indexNode")
+  index.node = resgf_get_indexNode()
 )
 }
 \arguments{
@@ -21,8 +21,8 @@ resgf_get_filelist(
 
 \item{processes}{Number of processes to perform in parallel}
 
-\item{index.node}{URL (including "http://") of the ESGF index node to search. Defaults to options("resgf.indexNode"). 
-Passed in this instance further to `resgf_search*()`}
+\item{index.node}{URL (including "http://") of the ESGF index node to search. Defaults to global default
+retrieved by `resgf_get_indexNode()`.' Passed in this instance further to `resgf_search*()`}
 }
 \value{
 

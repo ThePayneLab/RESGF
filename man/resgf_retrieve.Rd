@@ -7,7 +7,7 @@
 resgf_retrieve(
   object,
   local.dir = "missing",
-  node = "http://esgf-node.llnl.gov/esg-search",
+  index.node = resgf_get_indexNode(),
   processes = 1,
   keep.tempfiles = FALSE,
   connect.insecurely = FALSE
@@ -18,7 +18,8 @@ resgf_retrieve(
 
 \item{local.dir}{The local directory in which to download - overrides the default taken from an resgfStatus object.}
 
-\item{node}{ESGF node to generate wget scripts from}
+\item{index.node}{URL (including "http://") of the ESGF index node to search.  Defaults to global default
+retrieved by `resgf_get_indexNode()`.}
 
 \item{processes}{Number of processes to run in parallel}
 

@@ -136,7 +136,8 @@ pretty.filesize <- function(x) {
 #' ESGF search functionality (and can work with aggregations and files as well).
 #'
 #' @param ... A list of constraints on which to apply the search.
-#' @param index.node URL (including "http://") of the ESGF index node to search. Defaults to options("resgf.indexNode")
+#' @param index.node URL (including "http://") of the ESGF index node to search.  Defaults to global default
+#' retrieved by `resgf_get_indexNode()`.
 #' @param search.limit Maximum number of values to return in the search. ESGF currently limits this to 10000
 #' @param show.all.replicas Show all copies (replicas) of a file or dataset (TRUE) or just the "original". Defaults to FALSE
 #' @param show.all.versions Should the result showsall versions of a file or dataset? Defaults to FALSE
@@ -155,7 +156,7 @@ pretty.filesize <- function(x) {
 #'                       project="CMIP6")
 resgf_search <-
   function(...,
-           index.node=getOption("resgf.indexNode"),
+           index.node=resgf_get_indexNode(),
            search.limit=10000,
            show.all.replicas=FALSE,
            show.all.versions=FALSE,
@@ -283,8 +284,8 @@ resgf_simplify <- function(object) {
 #' @param max.files maximum number of files to be returned in a chunk
 #' @param max.datasets maximum number of datasets to request in a chunk
 #' @param processes Number of processes to perform in parallel
-#' @param index.node URL (including "http://") of the ESGF index node to search. Defaults to options("resgf.indexNode"). 
-#' Passed in this instance further to `resgf_search*()`
+#' @param index.node URL (including "http://") of the ESGF index node to search. Defaults to global default
+#' retrieved by `resgf_get_indexNode()`.' Passed in this instance further to `resgf_search*()`
 #'
 #' @return
 #' @export
@@ -293,7 +294,7 @@ resgf_get_filelist <-
            max.files=1000,
            max.datasets=10,
            processes=1,
-           index.node=getOption("resgf.indexNode")) {
+           index.node=resgf_get_indexNode()) {
     #Require input object to be dataset search result
     assert_that(max(object$number_of_files)< max.files,
                 msg="File chunk size is too small.")

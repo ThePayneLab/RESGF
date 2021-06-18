@@ -12,7 +12,8 @@
 #'
 #' @param object Either a resgfStatus or resgfFileset object detailing what should be retrieved
 #' @param local.dir The local directory in which to download - overrides the default taken from an resgfStatus object.
-#' @param node ESGF node to generate wget scripts from
+#' @param index.node URL (including "http://") of the ESGF index node to search.  Defaults to global default
+#' retrieved by `resgf_get_indexNode()`.
 #' @param processes Number of processes to run in parallel
 #' @param keep.tempfiles Retains the wget download script and log files after completion.
 #' @param connect.insecurely Connect to server insecurely (ignoring certificates), by enabling the "-i" flag
@@ -27,7 +28,7 @@
 resgf_retrieve <-
   function(object,
            local.dir="missing",
-           node="http://esgf-node.llnl.gov/esg-search",
+           index.node=resgf_get_indexNode(),
            processes=1,
            keep.tempfiles=FALSE,
            connect.insecurely=FALSE) {
@@ -66,11 +67,8 @@ resgf_retrieve <-
       this.filename <- get.this$filename[[1]]
 
       #Request a wget script for the file
-      search.cmd <- sprintf("%s/wget?checksum=%s",
-                            node,
-                            this.checksum)
       search.cmd <- sprintf("%s/wget?id=%s",
-                            node,
+                            index.node,
                             this.id)
       this.wget.rtn <- GET(search.cmd)
       wget.script <- content(this.wget.rtn,"text")

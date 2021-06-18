@@ -4,11 +4,14 @@
 \alias{default}
 \alias{resgf_get_indexNode}
 \alias{resgf_set_indexNode}
+\alias{resgf_get_node_status}
 \title{Get the address of the default index node}
 \usage{
 resgf_get_indexNode()
 
 resgf_set_indexNode(node)
+
+resgf_get_node_status()
 }
 \arguments{
 \item{node}{URL (including http://) of the default index node to be used}
