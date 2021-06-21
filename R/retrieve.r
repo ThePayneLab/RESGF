@@ -46,18 +46,20 @@ resgf_retrieve <-
       assert_that(!missing(local.dir),
                   msg="local.dir argument must be supplied when object is of class resgfFileset.")
       
-    } else if  (attr(object,"checksums.verified")) { #Get missing and checksum failures (if any)
+    } else if  (is.resgfStatus(object) &attr(object,"checksums.verified")) { #Get missing or checksum failures (if any)
       get.these <-
         object %>%
         as_tibble() %>%
-        filter(!file.exists(local.path) | !checksum.passed)
+        filter(!locally.valid | !checksum.passed)
       local.dir <- attr(object,"local.dir")
-    } else { #Only get missing
+    } else if  (is.resgfStatus(object) & !attr(object,"checksums.verified")) { #Get locally missing or failed  (if any)
       get.these <-
         object %>%
         as_tibble() %>%
-        filter(!file.exists(local.path))
+        filter(!locally.valid)
       local.dir <- attr(object,"local.dir")
+    } else {
+      stop("Shouldn't be here")
     }
 
     #Retrieval function

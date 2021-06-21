@@ -8,6 +8,7 @@ resgf_status_check(
   local.dir,
   remote.db,
   check.checksums = FALSE,
+  max.filesize.err = 0.001,
   processes = 1
 )
 }
@@ -18,6 +19,9 @@ resgf_status_check(
 resgfStatus object that we wish to recheck.}
 
 \item{check.checksums}{Should the comparison be done using the checksums (slow!)? Or only the filenames.}
+
+\item{max.filesize.err}{Maximum (relative) error in filesize between the local and remote objects (relative to remote). 
+Defaults to 0.001 (1 ppt)}
 
 \item{processes}{Number of processes to run in parallel}
 }

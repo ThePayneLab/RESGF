@@ -7,6 +7,7 @@ print.resgfStatus <-
           function(object,n=NULL) {
             cat(sprintf("%-30s : %s\n","Local directory",attr(object,"local.dir")))
             cat(sprintf("%-30s : %s\n","Checksums verified?",attr(object,"checksums.verified")))
+            cat(sprintf("%-30s : %s\n","Max. filesize error allowed",attr(object,"max.filesize.err")))
             cat(sprintf("%-30s : %i\n","Remote files",nrow(object)))
             cat(sprintf("%-30s : %i\n","Valid local files",
                          sum(object$locally.valid)))
@@ -53,6 +54,8 @@ dplyr_reconstruct.resgfStatus = function(data, template) {
 #' @param remote.db resgfFileset object generated previously, which forms the reference database. Alternatively, another
 #' resgfStatus object that we wish to recheck.
 #' @param check.checksums Should the comparison be done using the checksums (slow!)? Or only the filenames.
+#' @param max.filesize.err Maximum (relative) error in filesize between the local and remote objects (relative to remote). 
+#' Defaults to 0.001 (1 ppt)
 #' @param processes Number of processes to run in parallel
 #'
 #' @return An resgfStatus object
@@ -65,6 +68,7 @@ resgf_status_check <-
   function(local.dir,
            remote.db,
            check.checksums=FALSE,
+           max.filesize.err=0.001,
            processes=1) {
     #Check inputs
     assert_that(is.resgfFileset(remote.db) | is.resgfStatus(remote.db),
@@ -91,8 +95,10 @@ resgf_status_check <-
     #Add check for zero file size
     status.db <-
       status.db %>%
-      mutate(locally.valid=map_if(local.path,!is.na(local.path),~file.size(.x)!=0,.else=~FALSE),
-             locally.valid=map_lgl(locally.valid,~.x))
+      mutate(local.filesize=map_if(local.path,!is.na(local.path), ~file.size(.x) , .else=~NA_real_),
+             local.filesize=simplify(local.filesize),
+             filesize.err=abs(local.filesize-size)/size,
+             locally.valid=ifelse(is.na(local.path),FALSE, filesize.err < max.filesize.err))
 
     #Here we would do the checksum check
     if(check.checksums) {
@@ -135,6 +141,7 @@ resgf_status_check <-
                       nrow=nrow(status.db),
                       class="resgfStatus",
                       local.dir=local.dir,
+                      max.filesize.err=max.filesize.err,
                       checksums.verified=check.checksums)
 
     return(rtn)

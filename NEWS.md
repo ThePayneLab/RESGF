@@ -11,6 +11,7 @@
 * Add flag to `resgf-retrieve()` to enable insecure connections.
 * Use `option("resgf.indexNode")` to set a default index node universally. Add specification of index node to `resgf_get_fileset()`
 * Add `resgf_get_node_status()` to find out what's going on (programmatically)
+* `resgf_status()` now checks that filesizes agree to within a given threshold.
 
 # RESGF 0.1.0
 
