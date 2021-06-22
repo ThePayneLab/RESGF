@@ -186,7 +186,7 @@ resgf_search <-
     
     #Do first search
     search.res <- fromJSON(search.cmd,flatten=TRUE)
-    
+
     #Convert to a results table
     if(search.res$response$numFound>0) {
       rtn.tb <-
@@ -281,27 +281,29 @@ resgf_simplify <- function(object) {
 #' be done in parallel as well.
 #'
 #' @param object resgfDataset object from which to retrieve the underlying files
-#' @param max.files maximum number of files to be returned in a chunk
-#' @param max.datasets maximum number of datasets to request in a chunk
 #' @param processes Number of processes to perform in parallel
 #' @param index.node URL (including "http://") of the ESGF index node to search. Defaults to global default
 #' retrieved by `resgf_get_indexNode()`.' Passed in this instance further to `resgf_search*()`
+#' 
+#' @details Note that we by default search across all replicas and all versions by default. Each replica and version in ESG has a
+#'  unique id that is used as the basis for retrieveal (`object$id`). In principle, it makes sense to always search across the
+#'  entire ESGF to find the exact file listed in the dataset - failing to specify these parameters results in zero matches.
+#'  But your mileage may vary - please report this as a bug if it is a problem.
 #'
 #' @return
 #' @export
 resgf_get_filelist <-
   function(object,
-           max.files=1000,
-           max.datasets=10,
            processes=1,
            index.node=resgf_get_indexNode()) {
+
     #Require input object to be dataset search result
-    assert_that(max(object$number_of_files)< max.files,
-                msg="File chunk size is too small.")
     assert_that(is.resgfDataset(object),
                 msg="Input must be an object returned by resgf_search_datasets().")
     
     #Because we can only receive 10000 results at a time, we need to process the results piecewise
+    max.files <- 1000   #Chunking parameters
+    max.datasets <- 10
     this.chunk <- 1
     to.assign <-
       object %>%
@@ -326,6 +328,9 @@ resgf_get_filelist <-
       pblapply(chunk.l,
                function(x) {resgf_search_files(dataset_id=x$id,
                                                simplify=FALSE,
+                                               show.all.replicas=TRUE,
+                                               show.all.versions=TRUE,
+                                               search.local.node.only=FALSE,
                                                index.node=index.node)},
                cl=processes)
 

@@ -4,20 +4,10 @@
 \alias{resgf_get_filelist}
 \title{Get the filelist}
 \usage{
-resgf_get_filelist(
-  object,
-  max.files = 1000,
-  max.datasets = 10,
-  processes = 1,
-  index.node = resgf_get_indexNode()
-)
+resgf_get_filelist(object, processes = 1, index.node = resgf_get_indexNode())
 }
 \arguments{
 \item{object}{resgfDataset object from which to retrieve the underlying files}
-
-\item{max.files}{maximum number of files to be returned in a chunk}
-
-\item{max.datasets}{maximum number of datasets to request in a chunk}
 
 \item{processes}{Number of processes to perform in parallel}
 
@@ -31,4 +21,10 @@ retrieved by `resgf_get_indexNode()`.' Passed in this instance further to `resgf
 Gets the list of files associated with the datasets. This is done in a piecewise manner to avoid
 overloading both the number of return values and the ability to issue the command, and can optionally
 be done in parallel as well.
+}
+\details{
+Note that we by default search across all replicas and all versions by default. Each replica and version in ESG has a
+ unique id that is used as the basis for retrieveal (`object$id`). In principle, it makes sense to always search across the
+ entire ESGF to find the exact file listed in the dataset - failing to specify these parameters results in zero matches.
+ But your mileage may vary - please report this as a bug if it is a problem.
 }
