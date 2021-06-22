@@ -1,3 +1,6 @@
+# RESGF (development version)
+
+
 # RESGF 0.2.0
 
 * `resgf_search()` results are now simplifed where possible to remove unnecessary lists
