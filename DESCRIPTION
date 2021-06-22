@@ -1,7 +1,7 @@
 Package: RESGF
 Type: Package
 Title: RESGF
-Version: 0.1.0.9000
+Version: 0.2.0
 Author: Mark R. Payne <mpay@aqua.dtu.dk>
 Maintainer: Mark R. Payne <mpay@aqua.dtu.dk>
 Description: Streamlines searching and downloading data from the the Earth System Grid Federation (ESGF)
