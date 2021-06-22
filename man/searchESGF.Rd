@@ -9,8 +9,12 @@
 \usage{
 resgf_search(
   ...,
-  node = "http://esgf-node.llnl.gov/esg-search",
-  search.limit = 10000
+  index.node = resgf_get_indexNode(),
+  search.limit = 10000,
+  show.all.replicas = FALSE,
+  show.all.versions = FALSE,
+  search.local.node.only = FALSE,
+  simplify = TRUE
 )
 
 resgf_search_datasets(...)
@@ -20,13 +24,23 @@ resgf_search_files(...)
 \arguments{
 \item{...}{A list of constraints on which to apply the search.}
 
-\item{node}{URL (including "http://") of the ESGF index node to search}
+\item{index.node}{URL (including "http://") of the ESGF index node to search.  Defaults to global default
+retrieved by `resgf_get_indexNode()`.}
 
 \item{search.limit}{Maximum number of values to return in the search. ESGF currently limits this to 10000}
+
+\item{show.all.replicas}{Show all copies (replicas) of a file or dataset (TRUE) or just the "original". Defaults to FALSE}
+
+\item{show.all.versions}{Should the result showsall versions of a file or dataset? Defaults to FALSE}
+
+\item{search.local.node.only}{Should just the local index node be searched (TRUE) or a distributed search across 
+the entire ESGF be used (FALSE). Defaults to FALSE.}
+
+\item{simplify}{Should the search function attempt to simplify the results or simply leave them as is?}
 }
 \value{
-resegf_search_datasets() returns an resgf_dataset object detailing the search results. resgf_search()
-returns an resgf_search_result object.
+resegf_search_datasets() returns an resgfDataset object detailing the search results. resgf_search()
+returns an resgfSearchResult object.
 }
 \description{
 Functions to search ESGF.

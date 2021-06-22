@@ -11,7 +11,7 @@ resgf_status_by_field(object, field.idx = 1, field.sep = "_")
 resgf_status_by_node(object)
 }
 \arguments{
-\item{object}{An resgf_status object}
+\item{object}{An resgfStatus object}
 
 \item{field.idx}{Index of the filename field to summarise over.}
 
@@ -21,5 +21,5 @@ resgf_status_by_node(object)
 A tibble summarising the status accordingly.
 }
 \description{
-Summarise the results stored in a resgf_status object in terms of one of the filename fields or the data node
+Summarise the results stored in a resgfStatus object in terms of one of the filename fields or the data node
 }

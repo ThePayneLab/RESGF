@@ -7,26 +7,34 @@
 resgf_retrieve(
   object,
   local.dir = "missing",
-  node = "http://esgf-node.llnl.gov/esg-search",
+  index.node = resgf_get_indexNode(),
   processes = 1,
-  keep.script = FALSE
+  keep.tempfiles = FALSE,
+  connect.insecurely = FALSE
 )
 }
 \arguments{
-\item{object}{Either a resgf_status or resgf_fileset object detailing what should be retrieved}
+\item{object}{Either a resgfStatus or resgfFileset object detailing what should be retrieved}
 
-\item{local.dir}{The local directory in which to download - overrides the default taken from an resgf_status object.}
+\item{local.dir}{The local directory in which to download - overrides the default taken from an resgfStatus object.}
 
-\item{node}{ESGF node to generate wget scripts from}
+\item{index.node}{URL (including "http://") of the ESGF index node to search.  Defaults to global default
+retrieved by `resgf_get_indexNode()`.}
 
 \item{processes}{Number of processes to run in parallel}
 
-\item{keep.script}{Retains the wget download script after completion.}
+\item{keep.tempfiles}{Retains the wget download script and log files after completion.}
+
+\item{connect.insecurely}{Connect to server insecurely (ignoring certificates), by enabling the "-i" flag}
 }
 \description{
 Retrieve missing files from ESGF
 }
 \details{
-When a resgf_status object is supplied, only files that are not held locally (but are listed in the manifest) are retrieved. For a manifest object, all files are retrieved
-are
+When a resgfStatus object is supplied, only files that are not held locally or that have failed checksum checks 
+(if performed)are retrieved. For a resgfFileset object, all files are retrieved.
+
+The download scripts are always written to local.dir with the extension *.sh. If run in parallel, 
+log files are also written to the local.dir with the extension .sh.log. Normally these are deleted upon a successful 
+completion, but they can be retained using the keep.tempfiles argument.
 }
