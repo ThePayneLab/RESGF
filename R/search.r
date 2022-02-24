@@ -224,13 +224,16 @@ resgf_search_datasets <-
     #Overwrite type, if supplied
     arg.list$type <- "Dataset"
     #Make call to generic search function
-    rtn <-
-      do.call(resgf_search,arg.list) %>%
-      new_tibble(.,
+    res <- do.call(resgf_search,arg.list)
+    if(!is.null(res)){
+      new_tibble(res,
                  class=c("resgfDataset"),
-                 nrow=nrow(.))
-    
-    return(rtn)
+                 nrow=nrow(res)) %>% 
+        return()
+      
+    } else{
+      return(NULL)  #Or ideally an empty resgfDataset
+    }  
   }
 
 #' @export
@@ -242,13 +245,17 @@ resgf_search_files <-
     #Overwrite type, if supplied
     arg.list$type <- "File"
     #Make call to generic search function
-    rtn <-
-      do.call(resgf_search,arg.list) %>%
-      new_tibble(.,
-                 class=c("resgfFileset"),
-                 nrow=nrow(.))
+    res <- do.call(resgf_search,arg.list) 
+      if(!is.null(res)){
+        new_tibble(res,
+                   class=c("resgfFileset"),
+                   nrow=nrow(res)) %>% 
+          return()
+        
+      } else{
+        return(NULL)  #Or ideally an empty resgfDataset
+      }  
     
-    return(rtn)
   }
 
 #========================================================================
